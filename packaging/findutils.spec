@@ -77,6 +77,6 @@ rm -f $RPM_BUILD_ROOT%{_infodir}/find-maint*
 %{_bindir}/locate
 %{_bindir}/updatedb
 %{_libdir}/find
-%config(noreplace) %{_sysconfigdir}/sysconfig/locate
+%config(noreplace) %{_sysconfdir}/sysconfig/locate
 
 %changelog
