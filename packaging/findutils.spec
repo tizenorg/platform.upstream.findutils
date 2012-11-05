@@ -8,16 +8,6 @@ Group:          Productivity/File utilities
 # retrieved from http://alpha.gnu.org/pub/gnu/findutils/findutils-4.5.10.tar.gz
 Source:         findutils-%{version}.tar.bz2
 Source1:        sysconfig.locate
-# Use /proc/mounts instead of /etc/mtab as autofs entries are only
-# listed in the kernels >= 2.6.32
-Patch0:         findutils-4.5.10-use_proc_mounts.patch
-# adds a new option -xautofs to find to not descend into directories on autofs file systems
-Patch1:         findutils-4.4.2-xautofs.patch
-Patch2:         findutils-4.4.2-updatedb.patch
-Patch3:         findutils-4.5.10-prune_unknown.patch
-Patch4:         findutils-4.5.10-updatedb_ignore_nfsv4.patch
-Patch5:         findutils-stdio.in.patch
-BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description
 The findutils package contains programs which will help you locate
@@ -49,12 +39,6 @@ switching on the computer.
 
 %prep
 %setup -q
-%patch0
-%patch1 -p1
-%patch2
-%patch3
-%patch4
-%patch5 -p1
 
 %build
 %ifarch %arm armv5tel armv7l armv7el armv5el
