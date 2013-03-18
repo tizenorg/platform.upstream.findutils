@@ -4,7 +4,7 @@ Version:        4.5.10
 Release:        0
 Summary:        The GNU versions of find utilities (find and xargs)
 License:        GPL-3.0+
-Group:          Productivity/File utilities
+Group:          Base/Tools
 # retrieved from http://alpha.gnu.org/pub/gnu/findutils/findutils-4.5.10.tar.gz
 Source:         findutils-%{version}.tar.bz2
 Source1:        sysconfig.locate
@@ -21,10 +21,9 @@ You should install findutils because it includes tools that are very
 useful for finding things on your system.
 
 
-%lang_package
 %package locate
 Summary:        Tool for Locating Files (findutils subpackage)
-Group:          Productivity/File utilities
+Group:          Base/Tools
 Provides:       findutils:/usr/bin/locate
 Requires:       findutils = %{version}
 
@@ -57,7 +56,8 @@ make %{?_smp_mflags}
 make check
 
 %install
-make install DESTDIR=$RPM_BUILD_ROOT
+%make_install
+
 install -D -m 644 %{SOURCE1} $RPM_BUILD_ROOT/etc/sysconfig/locate
 rm -f $RPM_BUILD_ROOT%{_bindir}/oldfind
 rm -f $RPM_BUILD_ROOT%{_bindir}/ftsfind
@@ -66,9 +66,11 @@ rm -f $RPM_BUILD_ROOT%{_infodir}/find-maint*
 
 %docs_package
 
+%lang_package
+
 %files
 %defattr(-,root,root,-)
-%doc COPYING
+%license COPYING
 %{_bindir}/find
 %{_bindir}/xargs
 
