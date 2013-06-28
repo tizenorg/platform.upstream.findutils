@@ -8,6 +8,7 @@ Group:          Base/Tools
 # retrieved from http://alpha.gnu.org/pub/gnu/findutils/findutils-4.5.10.tar.gz
 Source:         findutils-%{version}.tar.bz2
 Source1:        sysconfig.locate
+Source1001: 	findutils.manifest
 
 %description
 The findutils package contains programs which will help you locate
@@ -38,6 +39,7 @@ switching on the computer.
 
 %prep
 %setup -q
+cp %{SOURCE1001} .
 
 %build
 %ifarch %arm armv5tel armv7l armv7el armv5el
@@ -69,12 +71,14 @@ rm -f $RPM_BUILD_ROOT%{_infodir}/find-maint*
 %lang_package
 
 %files
+%manifest %{name}.manifest
 %defattr(-,root,root,-)
 %license COPYING
 %{_bindir}/find
 %{_bindir}/xargs
 
 %files locate
+%manifest %{name}.manifest
 %defattr(-,root,root,-)
 %{_bindir}/locate
 %{_bindir}/updatedb
