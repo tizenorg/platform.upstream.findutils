@@ -1,0 +1,8 @@
+Change-Id: I2ffffa5e19403fc49c3fdc5d6454c98004048a3a
+Code-Review+2: Ryan Ware <ware@linux.intel.com>
+Verified+1: Ryan Ware <ware@linux.intel.com>
+Submitted-by: Ryan Ware <ware@linux.intel.com>
+Submitted-at: Mon, 08 Jul 2013 09:40:30 -0700
+Reviewed-on: https://review.tizen.org/gerrit/4775
+Project: platform/upstream/findutils
+Branch: refs/heads/tizen
