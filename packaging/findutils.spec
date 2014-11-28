@@ -1,6 +1,6 @@
 Name:           findutils
 Url:            http://www.gnu.org/software/findutils/
-Version:        4.5.10
+Version:        4.5.14
 Release:        0
 Summary:        The GNU versions of find utilities (find and xargs)
 License:        GPL-3.0+
@@ -52,7 +52,7 @@ export DEFAULT_ARG_SIZE="(31u * 1024u)"
   --without-included-regex \
   --without-fts \
   --enable-d_type-optimisation
-make %{?_smp_mflags}
+%{__make} %{?_smp_mflags}
 
 %check
 make check
