@@ -1,5 +1,5 @@
 /* buildcmd.[ch] -- build command lines from a stream of arguments
-   Copyright (C) 2005, 2008, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2008, 2010, 2011 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -25,13 +25,13 @@
 struct buildcmd_state
 {
   /* Number of valid elements in `cmd_argv', including terminating NULL.  */
-  int cmd_argc;			/* 0 */
+  size_t cmd_argc;			/* 0 */
 
   /* The list of args being built.  */
   char **cmd_argv; /* NULL */
 
   /* Number of elements allocated for `cmd_argv'.  */
-  int cmd_argv_alloc;
+  size_t cmd_argv_alloc;
 
   /* Storage for elements of `cmd_argv'.  */
   char *argbuf;
@@ -52,8 +52,8 @@ struct buildcmd_state
   int dir_fd;
 
   /* Summary of what we think the argv limits are. */
-  int largest_successful_arg_count;
-  int smallest_failed_arg_count;
+  size_t largest_successful_arg_count;
+  size_t smallest_failed_arg_count;
 };
 
 struct buildcmd_control
@@ -77,7 +77,7 @@ struct buildcmd_control
    * function returns a useful value even if ARG_MAX is not defined.
    * However, sometimes, max_arg_count is LONG_MAX!
    */
-  long max_arg_count;
+  size_t max_arg_count;
 
 
   /* The length of `replace_pat'.  */
@@ -87,20 +87,20 @@ struct buildcmd_control
    the end of the command argument list, they are each stuck into the
    initial args, replacing each occurrence of the `replace_pat' in the
    initial args.  */
-  char *replace_pat;
+  const char *replace_pat;
 
   /* Number of initial arguments given on the command line.  */
-  int initial_argc;		/* 0 */
+  size_t initial_argc;		/* 0 */
 
   /* exec callback. */
   int (*exec_callback)(struct buildcmd_control *, void *usercontext, int argc, char **argv);
 
   /* If nonzero, the maximum number of nonblank lines from stdin to use
      per command line.  */
-  long lines_per_exec;		/* 0 */
+  unsigned long lines_per_exec;		/* 0 */
 
   /* The maximum number of arguments to use per command line.  */
-  long args_per_exec;
+  size_t args_per_exec;
 };
 
 enum BC_INIT_STATUS
@@ -138,7 +138,7 @@ extern size_t bc_get_arg_max(void);
 extern void bc_use_sensible_arg_max(struct buildcmd_control *ctl);
 extern void bc_clear_args(const struct buildcmd_control *ctl,
 			  struct buildcmd_state *state);
-bool bc_args_exceed_testing_limit(const char **argv);
+bool bc_args_exceed_testing_limit(char **argv);
 
 
 #endif

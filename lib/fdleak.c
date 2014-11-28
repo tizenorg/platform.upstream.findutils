@@ -1,5 +1,5 @@
 /* fdleak.c -- detect file descriptor leaks
-   Copyright (C) 2010 Free Software Foundation, Inc.
+   Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -14,28 +14,34 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
+/* config.h must be included first. */
 #include <config.h>
-#include <unistd.h>
-#include <poll.h>
+
+/* system headers. */
+#include <assert.h>
 #include <fcntl.h>
-#if defined (HAVE_SYS_RESOURCE_H)
-#include <sys/resource.h>
-#endif
 #include <limits.h>
+#include <poll.h>
+#include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <assert.h>
-#include <stdbool.h>
+#if defined HAVE_SYS_RESOURCE_H
+# include <sys/resource.h>
+#endif
+#include <unistd.h>
 
-#include "fcntl--.h"
-#include "dirent-safer.h"
-#include "extendbuf.h"
+/* gnulib headers. */
 #include "cloexec.h"
-#include "safe-atoi.h"
-#include "fdleak.h"
+#include "dirent-safer.h"
 #include "error.h"
+#include "fcntl--.h"
+#include "gettext.h"
+
+/* find headers. */
+#include "extendbuf.h"
+#include "fdleak.h"
+#include "safe-atoi.h"
 
 #if ENABLE_NLS
 # include <libintl.h>
@@ -59,14 +65,10 @@ static int *non_cloexec_fds;
 static size_t num_cloexec_fds;
 
 
-#if !defined(O_CLOEXEC)
-#define O_CLOEXEC 0
-#endif
-
 /* Determine the value of the largest open fd, on systems that
  * offer /proc/self/fd. */
 static int
-get_proc_max_fd ()
+get_proc_max_fd (void)
 {
   const char *path = "/proc/self/fd";
   int maxfd = -1;
@@ -118,7 +120,7 @@ get_max_fd (void)
     open_max = _POSIX_OPEN_MAX;	/* underestimate */
 
   /* We assume if RLIMIT_NOFILE is defined, all the related macros are, too. */
-#if defined (HAVE_GETRUSAGE) && defined (RLIMIT_NOFILE)
+#if defined HAVE_GETRUSAGE && defined RLIMIT_NOFILE
   if (0 == getrlimit (RLIMIT_NOFILE, &fd_limit))
     {
       if (fd_limit.rlim_cur == RLIM_INFINITY)
@@ -160,12 +162,12 @@ visit_open_fds (int fd_min, int fd_max,
 	}
       else
 	{
-	  int i;
-	  for (i=0; i<limit; i++)
+	  int j;
+	  for (j=0; j<limit; j++)
 	    {
-	      if (pf[i].revents != POLLNVAL)
+	      if (pf[j].revents != POLLNVAL)
 		{
-		  if (0 != (rv = callback (pf[i].fd, cb_context)))
+		  if (0 != (rv = callback (pf[j].fd, cb_context)))
 		    return rv;
 		}
 	    }

@@ -1,5 +1,5 @@
 /* word_io.c -- word oriented I/O
-   Copyright (C) 2007, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2010, 2011 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,17 +15,24 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/* config.h must be included first. */
 #include <config.h>
 
-#include <string.h>
-#include <stdio.h>
+/* system headers. */
+#include <assert.h>
 #include <errno.h>
 #include <stdbool.h>		/* for bool */
-#include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
+/* gnulib headers. */
+#include "byteswap.h"
 #include "error.h"
+#include "gettext.h"
 #include "quotearg.h"
+
+/* find headers. */
 #include "locatedb.h"
 
 #if ENABLE_NLS
@@ -49,11 +56,6 @@
 # define N_(String) String
 #endif
 
-
-/* Swap bytes in 32 bit value.  This code is taken from glibc-2.3.3. */
-#define bswap_32(x) \
-     ((((x) & 0xff000000) >> 24) | (((x) & 0x00ff0000) >>  8) | \
-      (((x) & 0x0000ff00) <<  8) | (((x) & 0x000000ff) << 24))
 
 enum { WORDBYTES=4 };
 

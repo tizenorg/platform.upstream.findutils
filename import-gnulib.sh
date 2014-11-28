@@ -1,8 +1,8 @@
 #! /bin/sh
 #
 # import-gnulib.sh -- imports a copy of gnulib into findutils
-# Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009, 2010 Free Software
-# Foundation, Inc.
+# Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009, 2010,
+#               2011 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,10 +19,10 @@
 #
 ##########################################################################
 #
-# This script is intended to populate the "gnulib" directory
+# This script is intended to populate the "gl" directory
 # with a subset of the gnulib code, as provided by "gnulib-tool".
 #
-# To use it, just run this script with the top-level sourec directory
+# To use it, just run this script with the top-level source directory
 # as your working directory.
 
 # If CDPATH is set, it will sometimes print the name of the directory
@@ -31,11 +31,9 @@
 unset CDPATH
 
 ## Defaults
-# cvsdir=/doesnotexist
-git_repo="git://git.savannah.gnu.org/gnulib.git"
 configfile="./import-gnulib.config"
 need_checkout=yes
-gnulib_changed=false
+gldest=gl
 
 # If $GIT_CLONE_DEPTH is not set, apply a default.
 : ${GIT_CLONE_DEPTH:=4}
@@ -46,7 +44,7 @@ original_cmd_line_args="$@"
 
 usage() {
     cat >&2 <<EOF
-usage: $0 [-d gnulib-directory]
+usage: $0 [-d gnulib-directory] [-a]
 
 The default behaviour is to check out the Gnulib code via anonymous
 CVS (or update it if there is a version already checked out).  The
@@ -55,53 +53,40 @@ the configuration file $configfile.
 
 If you wish to work with a different version of gnulib, use the -d option
 to specify the directory containing the gnulib code.
+
+The -a option skips the import of the gnulib code, and just generates
+the output files (for example 'configure').
 EOF
 }
 
-
-do_checkout () {
-    local gitdir="$1"
-    echo checking out gnulib from GIT in $gitdir
-
-    if [ -z "$gnulib_version" ] ; then
-	echo "Error: There should be a gnulib_version setting in $configfile, but there is not." >&2
-	exit 1
-    fi
-
-
-    if ! [ -d "$gitdir" ] ; then
-	if mkdir "$gitdir" ; then
-	echo "Created $gitdir"
-	else
-	echo "Failed to create $gitdir" >&2
-	exit 1
+do_submodule () {
+    local sm_name="$1"
+    if test -f .gitmodules; then
+        if git config --file \
+	    .gitmodules "submodule.${sm_name}.url" >/dev/null; then
+            # Submodule config in .gitmodules is already in place.
+            # Copy the submodule config into .git.
+            git submodule init || exit $?
+            # Update the gnulib module.
+            git submodule update || exit $?
+        else
+	    # .gitmodules should include gnulib.
+	    cat >&2 <<EOF
+The .gitmodules file is present, but does not list ${sm_name}.
+This version of findutils expects it to be there.
+Please report this as a bug to bug-findutils@gnu.org.
+The .gitmodules file contains this:
+EOF
+	    cat .gitmodules >&2
+	    exit 1
 	fi
-    fi
-
-    # Change directory unconditionally before issuing git commands, because
-    # we're dealing with two git repositories; the gnulib one and the
-    # findutils one.
-
-    if ( cd $gitdir && test -d gnulib/.git ; ) ; then
-      echo "Git repository was already initialised."
     else
-      echo "Cloning the git repository..."
-      ( cd $gitdir && git clone --depth="${GIT_CLONE_DEPTH}" "$git_repo" ; )
-    fi
-
-    if ( cd $gitdir/gnulib &&
-	    git diff --name-only --exit-code "$gnulib_version" ; ) ; then
-        # We are already at the correct version.
-        # Nothing to do
-        gnulib_changed=false
-        echo "Already at gnulib version $gnulib_version; no change"
-    else
-        gnulib_changed=true
-        set -x
-        ( cd $gitdir/gnulib &&
-	    git fetch origin &&
-	    git checkout "$gnulib_version" ; )
-        set +x
+	# findutils should have .gitmodules
+	cat >&2 <<EOF
+The .gitmodules file is missing.  This version of findutils expects it
+to be there.  Please report this as a bug to bug-findutils@gnu.org.
+EOF
+	exit 1
     fi
 }
 
@@ -124,15 +109,18 @@ run_gnulib_tool() {
     fi
 
 
-    if [ -d gnulib ]
+    if [ -d "${gldest}" ]
     then
-	echo "Warning: directory gnulib already exists." >&2
+	echo "Warning: directory ${gldest} already exists." >&2
     else
-	mkdir gnulib
+	mkdir "${gldest}"
     fi
 
     set -x
-    if "$tool" --import --symlink --with-tests --dir=. --lib=libgnulib --source-base=gnulib/lib --m4-base=gnulib/m4 --local-dir=gnulib-local $modules
+    if "$tool" --import --symlink --with-tests \
+	--dir=. --lib=libgnulib \
+	--source-base="${gldest}"/lib \
+	--m4-base="${gldest}"/m4 --local-dir=gnulib-local $modules
     then
 	set +x
     else
@@ -143,7 +131,7 @@ run_gnulib_tool() {
 
     # gnulib-tool does not remove broken symlinks leftover from previous runs;
     # this assumes GNU find, but should be a safe no-op if it is not
-    find -L gnulib -lname '*' -delete 2>/dev/null || :
+    find -L "${gldest}" -lname '*' -delete 2>/dev/null || :
 }
 
 rehack() {
@@ -187,7 +175,8 @@ update_licenses() {
 
 hack_gnulib_tool_output() {
     local gnulibdir="${1}"
-    for file in $extra_files; do
+    for file in $extra_files
+    do
       case $file in
 	*/mdate-sh | */texinfo.tex) dest=doc;;
 	*) dest=build-aux;;
@@ -195,7 +184,7 @@ hack_gnulib_tool_output() {
       copyhack "${gnulibdir}"/"$file" "$dest" || exit
     done
 
-    cat > gnulib/Makefile.am <<EOF
+    cat > gl/Makefile.am <<EOF
 # Copyright (C) 2004, 2009 Free Software Foundation, Inc.
 #
 # This file is free software, distributed under the terms of the GNU
@@ -214,7 +203,7 @@ EOF
 
 refresh_output_files() {
     autopoint -f &&
-    aclocal -I m4 -I gnulib/m4     &&
+    aclocal -I m4 -I gl/m4     &&
     autoheader                     &&
     autoconf                       &&
     automake --add-missing --copy
@@ -222,8 +211,11 @@ refresh_output_files() {
 
 
 update_version_file() {
+    local gnulib_git_dir="$1"
     local ver
-    outfile="lib/gnulib-version.c"
+    local outfile="lib/gnulib-version.c"
+    local gnulib_version="$( cd ${gnulib_git_dir} && git show-ref -s HEAD )"
+
     if [ -z "$gnulib_version" ] ; then
 	ver="unknown (locally modified code; no version number available)"
     else
@@ -251,14 +243,14 @@ check_merge_driver() {
 
 We recommend that you use a git merge driver for the ChangeLog file.
 This simplifies the task of merging branches.
-Please see the README section in gnulib-git/gnulib/lib/git-merge-changelog.c
+Please see the README section in gnulib/gnulib/lib/git-merge-changelog.c
 
 If you've read that and don't want to use it, just set the environment variable
 DO_NOT_WANT_CHANGELOG_DRIVER.
 
 Example:
   git config merge.merge-changelog.name 'GNU-style ChangeLog merge driver'
-  git config merge.merge-changelog.driver /usr/local/bin/git-merge-changelog  %O %A %B
+  git config merge.merge-changelog.driver '/usr/local/bin/git-merge-changelog  %O %A %B'
   echo 'ChangeLog    merge=merge-changelog' >> .gitattributes
 "
     if [ -z "$DO_NOT_WANT_CHANGELOG_DRIVER" ] ; then
@@ -313,27 +305,6 @@ Example:
 }
 
 
-move_cvsdir() {
-    local cvs_git_root=":pserver:anonymous@pserver.git.sv.gnu.org:/gnulib.git"
-
-    if test -d gnulib-cvs/gnulib/CVS
-    then
-      if test x"$(cat gnulib-cvs/gnulib/CVS/Root)" == x"$cvs_git_root"; then
-          # We cannot use the git-cvspserver interface because
-          # "update -D" doesn't work.
-          echo "WARNING: Migrating from git-cvs-pserver to native git..." >&2
-          savedir=gnulib-cvs.before-nativegit-migration
-      else
-          # The old CVS repository is not updated any more.
-          echo "WARNING: Migrating from old CVS repository to native git" >&2
-          savedir=gnulib-cvs.before-git-migration
-      fi
-      mv gnulib-cvs $savedir || exit 1
-      echo "Please delete $savedir eventually"
-    fi
-}
-
-
 record_config_change() {
     # $1: name of the import-gnulib.config file
     # $2: name of the last.config file
@@ -344,6 +315,56 @@ record_config_change() {
     fi
 }
 
+
+check_old_gnulib_dir_layout() {
+    # We used to keep the gnulib git repo in ./gnulib-git/ and use
+    # ./gnulib/ as the destination directory into which we installed
+    # (part of) the gnulib code.  This changed and now ./gnulib/
+    # contains the gnulib submodule and the destination directory is
+    # ./gl/.  In other words, ./gnulib/ used to be the destination,
+    # but now it is the source.
+fixmsg="\
+Findutils now manages the gnulib source code as a git submodule.
+
+If you are still using the directory layout in which the git tree for
+gnulib lives in ./gnulib-git/, please fix this and re-run import-gnulib.sh.
+The fix is very simple; please delete both ./gnulib/ and ./gnulib-git.
+
+This wasn't done automatically for you just in case you had any local changes.
+"
+
+    if test -d ./gl/; then
+	# Looks like we're already in the new directory layout.
+	true
+    elif test -d ./gnulib-git/; then
+	cat >&2 <<EOF
+You still have a ./gnulib-git directory.
+
+$fixmsg
+EOF
+	false
+    else
+	# No ./gl/ and no ./gnulib-git/.   If ./gnulib/ exists, it might
+	# be either.   If there is no ./gnulib/ we are safe to proceed anyway.
+	if test -d ./gnulib/; then
+	    if test -e ./gnulib/.git; then
+		# Looks like it is the submodule.
+		true
+	    else
+	cat >&2 <<EOF
+You have a ./gnulib directory which does not appear to be a submodule.
+
+$fixmsg
+EOF
+	false
+	    fi
+	else
+	    # No ./gl/, no ./gnulib/, no ./gnulib-git/.
+	    # It is safe to proceed anyway.
+	    true
+	fi
+    fi
+}
 
 main() {
     ## Option parsing
@@ -358,7 +379,7 @@ main() {
     done
 
     # We need the config file to tell us which modules
-    # to use, even if we don't want to know the CVS version.
+    # to use, even if we don't want to know the gnulib version.
     . $configfile || exit 1
 
     ## If -d was not given, do update
@@ -370,53 +391,30 @@ of the gnulib code.  See http://git.or.cz/ for more information about git.
 EOF
 	    exit 1
 	fi
-	move_cvsdir
-	do_checkout gnulib-git
+
+        # Check for the old directory layout.
+	echo "Checking the submodule directory layout... "
+        check_old_gnulib_dir_layout || exit 1
+	echo "The submodule directory layout looks OK."
+
+	do_submodule gnulib
 	check_merge_driver
-	gnulibdir=gnulib-git/gnulib
+	gnulibdir=gnulib
     else
 	echo "Warning: using gnulib code which already exists in $gnulibdir" >&2
     fi
 
-    ## If the config file changed since we last imported, or the gnulib
-    ## code itself changed, we will need to re-run gnulib-tool.
-    lastconfig="./gnulib/last.config"
-    config_changed=false
-    if "$gnulib_changed" ; then
-	echo "The gnulib code changed, we need to re-import it."
-    else
-	if test -e "$lastconfig" ; then
-	    if cmp "$lastconfig" "$configfile" ; then
-		echo "Both gnulib and the import config are unchanged."
-	    else
-		echo "The gnulib import config was changed."
-		echo "We need to re-run gnulib-tool."
-		config_changed=true
-	    fi
-	else
-	    echo "$lastconfig does not exist, we need to run gnulib-tool."
-	    config_changed=true
-	fi
-    fi
-
-    ## Invoke gnulib-tool to import the code.
     local tool="${gnulibdir}"/gnulib-tool
-    if $gnulib_changed || $config_changed ; then
-	if run_gnulib_tool "${tool}" &&
-	    hack_gnulib_tool_output "${gnulibdir}" &&
-	    refresh_output_files &&
-	    update_licenses &&
-	    update_version_file &&
-	    record_config_change "$configfile" "$lastconfig"
-	then
-	    echo Done.
-	else
-	    echo FAILED >&2
-	    exit 1
-	fi
+    if run_gnulib_tool "${tool}" &&
+        hack_gnulib_tool_output "${gnulibdir}" &&
+        refresh_output_files &&
+        update_licenses &&
+        update_version_file "${gnulibdir}"
+    then
+        echo Done.
     else
-	echo "No change to the gnulib code or configuration."
-	echo "Therefore, no need to run gnulib-tool."
+        echo FAILED >&2
+        exit 1
     fi
 }
 

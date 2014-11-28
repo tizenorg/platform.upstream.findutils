@@ -1,7 +1,5 @@
-This is
-/home/james/source/GNU/findutils/git/gnu/findutils/doc/find.info,
-produced by makeinfo version 4.13 from
-/home/james/source/GNU/findutils/git/gnu/findutils/doc/find.texi.
+This is ../../../findutils/doc/find.info, produced by makeinfo version
+4.13 from ../../../findutils/doc/find.texi.
 
 INFO-DIR-SECTION Basics
 START-INFO-DIR-ENTRY
@@ -20,14 +18,14 @@ END-INFO-DIR-ENTRY
 certain criteria and performing various operations on them.
 
    Copyright (C) 1994, 1996, 1998, 2000, 2001, 2003, 2004, 2005, 2006,
-2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 
    Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
 any later version published by the Free Software Foundation; with no
 Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
 Texts.  A copy of the license is included in the section entitled "GNU
-Free Documentation License."
+Free Documentation License".
 
 
 File: find.info,  Node: Top,  Next: Introduction,  Up: (dir)
@@ -39,19 +37,19 @@ This file documents the GNU utilities for finding files that match
 certain criteria and performing various operations on them.
 
    Copyright (C) 1994, 1996, 1998, 2000, 2001, 2003, 2004, 2005, 2006,
-2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 
    Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
 any later version published by the Free Software Foundation; with no
 Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
 Texts.  A copy of the license is included in the section entitled "GNU
-Free Documentation License."
+Free Documentation License".
 
    This file documents the GNU utilities for finding files that match
 certain criteria and performing various actions on them.
 
-   This is edition 4.5.10, for `find' version 4.5.10.
+   This is edition 4.5.14, for `find' version 4.5.14.
 
 * Menu:
 
@@ -61,6 +59,7 @@ certain criteria and performing various actions on them.
 * Databases::                   Maintaining file name databases.
 * File Permissions::            How to control access to files.
 * Date input formats::          Specifying literal times.
+* Configuration::               Options you can select at compile time.
 * Reference::                   Summary of how to invoke the programs.
 * Common Tasks::                Solutions to common real-world problems.
 * Worked Examples::             Examples demonstrating more complex points.
@@ -503,14 +502,13 @@ more databases of file names and displays the file names that contain
 the pattern.  *Note Shell Pattern Matching::, for details about shell
 patterns.
 
-   If a pattern is a plain string--it contains no
-metacharacters--`locate' displays all file names in the database that
-contain that string.  If a pattern contains metacharacters, `locate'
-only displays file names that match the pattern exactly.  As a result,
-patterns that contain metacharacters should usually begin with a `*',
-and will most often end with one as well.  The exceptions are patterns
-that are intended to explicitly match the beginning or end of a file
-name.
+   If a pattern is a plain string - it contains no metacharacters -
+`locate' displays all file names in the database that contain that
+string.  If a pattern contains metacharacters, `locate' only displays
+file names that match the pattern exactly.  As a result, patterns that
+contain metacharacters should usually begin with a `*', and will most
+often end with one as well.  The exceptions are patterns that are
+intended to explicitly match the beginning or end of a file name.
 
    If you only want `locate' to match against the last component of the
 file names (the "base name" of the files) you can use the `--basename'
@@ -662,7 +660,7 @@ also occurs if a symbolic link exists but points to a file that is
 missing.
 
    The options controlling the behaviour of `find' with respect to
-links are as follows :-
+links are as follows:
 
 `-P'
      `find' does not dereference symbolic links at all.  This is the
@@ -691,7 +689,7 @@ links are as follows :-
      the command line.  This option is deprecated.  Where possible, you
      should use `-L' instead.
 
-   The following differences in behavior occur when the `-L' option is
+   The following differences in behaviour occur when the `-L' option is
 used:
 
    * `find' follows symbolic links to directories when searching
@@ -967,10 +965,10 @@ File: find.info,  Node: Size,  Next: Type,  Prev: Time,  Up: Finding Files
           Gigabytes (units of 1073741824 bytes)
 
      The `b' suffix always considers blocks to be 512 bytes.  This is
-     not affected by the setting (or non-setting) of the POSIXLY_CORRECT
-     environment variable.  This behaviour is different from the
-     behaviour of the `-ls' action).  If you want to use 1024-byte
-     units, use the `k' suffix instead.
+     not affected by the setting (or non-setting) of the
+     `POSIXLY_CORRECT' environment variable.  This behaviour is
+     different from the behaviour of the `-ls' action).  If you want to
+     use 1024-byte units, use the `k' suffix instead.
 
      The number can be prefixed with a `+' or a `-'.  A plus sign
      indicates that the test should succeed if the file uses at least N
@@ -1131,12 +1129,9 @@ on the basis of the result of that test.
      prefixed by `-' or `/'.
 
      A PMODE that starts with neither `-' nor `/' matches if MODE
-     exactly matches the file mode bits.
-
-     A PMODE that starts with `+' but which is not valid (for example
-     `+a+x') is an error if the POSIXLY_CORRECT environment variable it
-     set.  Otherwise this is treated as if the initial `+' were a `/',
-     for backward compatibility.
+     exactly matches the file mode bits.  (To avoid confusion with an
+     obsolete GNU extension, MODE must not start with a `+' immediately
+     followed by an octal digit.)
 
      A PMODE that starts with `-' matches if _all_ the file mode bits
      set in MODE are set for the file; bits not set in MODE are ignored.
@@ -1535,15 +1530,36 @@ File: find.info,  Node: Print File Information,  Next: Run Commands,  Prev: Prin
 
  -- Action: -printf format
      True; print FORMAT on the standard output, interpreting `\'
-     escapes and `%' directives.  Field widths and precisions can be
-     specified as with the `printf' C function.  Format flags (like `#'
-     for example) may not work as you expect because many of the
-     fields, even numeric ones, are printed with %s.  Numeric flags
-     which are affected in this way include G, U, b, D, k and n.  This
-     difference in behaviour means though that the format flag `-' will
-     work; it forces left-alignment of the field.  Unlike `-print',
-     `-printf' does not add a newline at the end of the string.  If you
-     want a newline at the end of the string, add a `\n'.
+     escapes and `%' directives (more details in the following
+     sections).
+
+     Field widths and precisions can be specified as with the `printf' C
+     function.  Format flags (like `#' for example) may not work as you
+     expect because many of the fields, even numeric ones, are printed
+     with %s.  Numeric flags which are affected in this way include `G',
+     `U', `b', `D', `k' and `n'.  This difference in behaviour means
+     though that the format flag `-' will work; it forces
+     left-alignment of the field.  Unlike `-print', `-printf' does not
+     add a newline at the end of the string.  If you want a newline at
+     the end of the string, add a `\n'.
+
+     As an example, an approximate equivalent of `-ls' with
+     null-terminated filenames can be achieved with this `-printf'
+     format:
+
+          find -printf "%i %4k %M %3n %-8u %-8g %8s %T+ %p\n->%l\0" | cat
+
+     A practical reason for doing this would be to get literal
+     filenames in the output, instead of `-ls''s backslash-escaped
+     names.  (Using `cat' here prevents this happening for the `%p'
+     format specifier; *note Unusual Characters in File Names::).  This
+     format also outputs a uniform timestamp format.
+
+     As for symlinks, the format above outputs the symlink target on a
+     second line, following `\n->'.  There is nothing following the
+     arrow for non-symlinks.  Another approach, for complete
+     consistency, would be to `-fprintf' the symlinks into a separate
+     file, so they too can be null-terminated.
 
  -- Action: -fprintf file format
      True; like `-printf' but write to FILE like `-fprint' (*note Print
@@ -1555,6 +1571,7 @@ File: find.info,  Node: Print File Information,  Next: Run Commands,  Prev: Prin
 * Escapes::
 * Format Directives::
 * Time Formats::
+* Formatting Flags::
 
 
 File: find.info,  Node: Escapes,  Next: Format Directives,  Up: Print File Information
@@ -1616,12 +1633,9 @@ width"."maximum field width" for each directive.  Format flags (like
 even numeric ones, are printed with %s.  The format flag `-' does work;
 it forces left-alignment of the field.
 
-   `%%' is a literal percent sign.  A `%' character followed by an
-unrecognised character (i.e., not a known directive or `printf' field
-width and precision specifier), is discarded (but the unrecognised
-character is printed), and a warning message is printed to the standard
-error output (because it was probably a typo).  Don't rely on this
-behaviour, because other directives may be added in the future.
+   `%%' is a literal percent sign.  *Note Reserved and Unknown
+Directives::, for a description of how format directives not mentioned
+below are handled.
 
    A `%' at the end of the format argument causes undefined behaviour
 since there is no following character.  In some locales, it may hide
@@ -1636,7 +1650,7 @@ novel you are reading.
 * Location Directives::
 * Time Directives::
 * Other Directives::
-* Formatting Flags::
+* Reserved and Unknown Directives::
 
 
 File: find.info,  Node: Name Directives,  Next: Ownership Directives,  Up: Format Directives
@@ -1808,7 +1822,7 @@ depends on the current locale, but it typically looks like
      Time Formats::).
 
 
-File: find.info,  Node: Other Directives,  Next: Formatting Flags,  Prev: Time Directives,  Up: Format Directives
+File: find.info,  Node: Other Directives,  Next: Reserved and Unknown Directives,  Prev: Time Directives,  Up: Format Directives
 
 3.2.2.6 Other Directives
 ........................
@@ -1818,7 +1832,26 @@ File: find.info,  Node: Other Directives,  Next: Formatting Flags,  Prev: Time D
      context.
 
 
-File: find.info,  Node: Time Formats,  Prev: Format Directives,  Up: Print File Information
+File: find.info,  Node: Reserved and Unknown Directives,  Prev: Other Directives,  Up: Format Directives
+
+3.2.2.7 Reserved and Unknown Directives
+.......................................
+
+The `%(', `%{' and `%[' format directives, with or without field with
+and precision specifications, are reserved for future use. Don't use
+them and don't rely on current experiment to predict future behaviour.
+To print `(', simply use `(' rather than `%('.  Likewise for `{' and
+`['.
+
+   Similarly, a `%' character followed by any other unrecognised
+character (i.e., not a known directive or `printf' field width and
+precision specifier), is discarded (but the unrecognised character is
+printed), and a warning message is printed to the standard error output
+(because it was probably a typo).  Don't rely on this behaviour,
+because other directives may be added in the future.
+
+
+File: find.info,  Node: Time Formats,  Next: Formatting Flags,  Prev: Format Directives,  Up: Print File Information
 
 3.2.3 Time Formats
 ------------------
@@ -1958,10 +1991,10 @@ components.
      field includes a fractional part.
 
 
-File: find.info,  Node: Formatting Flags,  Prev: Other Directives,  Up: Format Directives
+File: find.info,  Node: Formatting Flags,  Prev: Time Formats,  Up: Print File Information
 
-3.2.3.4 Formatting Flags
-........................
+3.2.4 Formatting Flags
+----------------------
 
 The `%m' and `%d' directives support the `#', `0' and `+' flags, but
 the other directives do not, even if they print numbers.  Numeric
@@ -1999,14 +2032,15 @@ File: find.info,  Node: Single File,  Next: Multiple Files,  Up: Run Commands
 Here is how to run a command on one file at a time.
 
  -- Action: -execdir command ;
-     Execute COMMAND; true if zero status is returned.  `find' takes
-     all arguments after `-execdir' to be part of the command until an
+     Execute COMMAND; true if COMMAND returns zero.  `find' takes all
+     arguments after `-execdir' to be part of the command until an
      argument consisting of `;' is reached.  It replaces the string
      `{}' by the current file name being processed everywhere it occurs
      in the command.  Both of these constructions need to be escaped
      (with a `\') or quoted to protect them from expansion by the
-     shell.  The command is executed in the directory in which `find'
-     was run.
+     shell.  The command is executed in the directory which `find' was
+     searching at the time the action was executed (that is, {} will
+     expand to a file in the local directory).
 
      For example, to compare each C header file in or below the current
      directory with the file `/tmp/master':
@@ -2044,8 +2078,9 @@ problems surrounding `-exec'.
 
  -- Action: -exec command ;
      This insecure variant of the `-execdir' action is specified by
-     POSIX.  The main difference is that the command is executed in the
-     directory from which `find' was invoked, meaning that `{}' is
+     POSIX.  Like `-execdir command ;' it is true if zero is returned
+     by COMMAND. The main difference is that the command is executed in
+     the directory from which `find' was invoked, meaning that `{}' is
      expanded to a relative path starting with the name of one of the
      starting directories, rather than just the basename of the matched
      file.
@@ -2069,14 +2104,15 @@ time it takes to start up the command each time.
 lines containing as many matched files as possible.
 
  -- Action: -execdir command {} +
-     This works as for `-execdir command ;', except that the `{}' at
-     the end of the command is expanded to a list of names of matching
-     files.  This expansion is done in such a way as to avoid exceeding
-     the maximum command line length available on the system.  Only one
-     `{}' is allowed within the command, and it must appear at the end,
-     immediately before the `+'.  A `+' appearing in any position other
-     than immediately after `{}' is not considered to be special (that
-     is, it does not terminate the command).
+     This works as for `-execdir command ;', except that the result is
+     always true, and the `{}' at the end of the command is expanded to
+     a list of names of matching files.  This expansion is done in such
+     a way as to avoid exceeding the maximum command line length
+     available on the system.  Only one `{}' is allowed within the
+     command, and it must appear at the end, immediately before the
+     `+'.  A `+' appearing in any position other than immediately after
+     `{}' is not considered to be special (that is, it does not
+     terminate the command).
 
  -- Action: -exec command {} +
      This insecure variant of the `-execdir' action is specified by
@@ -2084,7 +2120,7 @@ lines containing as many matched files as possible.
      directory from which `find' was invoked, meaning that `{}' is
      expanded to a relative path starting with the name of one of the
      starting directories, rather than just the basename of the matched
-     file.
+     file.  The result is always true.
 
    Before `find' exits, any partially-built command lines are executed.
 This happens even if the exit was caused by the `-quit' action.
@@ -2098,7 +2134,7 @@ can only be at the end of the command line, and that this might be a
 problem for some commands (`cp' and `rsync' for example).
 
    However, there is a slightly obscure but powerful workaround for this
-problem which takes advantage of the behaviour of `sh -c':-
+problem which takes advantage of the behaviour of `sh -c':
 
      find startpoint -tests ... -exec sh -c 'scp "$@" remote:/dest' sh {} +
 
@@ -2115,7 +2151,7 @@ at once, is to use the `xargs' command, which is invoked like this:
    `xargs' normally reads arguments from the standard input.  These
 arguments are delimited by blanks (which can be protected with double
 or single quotes or a backslash) or newlines.  It executes the COMMAND
-(default is `/bin/echo') one or more times with any INITIAL-ARGUMENTS
+(the default is `echo') one or more times with any INITIAL-ARGUMENTS
 followed by arguments read from standard input.  Blank lines on the
 standard input are ignored.  If the `-L' option is in use, trailing
 blanks indicate that `xargs' should consider the following line to be
@@ -2420,9 +2456,20 @@ entire job is done.
 
    The same idea can be generalized to as many processors as you have
 handy.  It also generalizes to other resources besides processors.  For
-example, if xargs is running commands that are waiting for a response
+example, if `xargs' is running commands that are waiting for a response
 from a distant network connection, running a few in parallel may reduce
 the overall latency by overlapping their waiting time.
+
+   If you are running commands in parallel, you need to think about how
+they should arbitrate access to any resources that they share.  For
+example, if more than one of them tries to print to stdout, the ouptut
+will be produced in an indeterminate order (and very likely mixed up)
+unless the processes collaborate in some way to prevent this.  Using
+some kind of locking scheme is one way to prevent such problems.  In
+general, using a locking scheme will help ensure correct output but
+reduce performance.  If you don't want to tolerate the performance
+difference, simply arrange for each process to produce a separate output
+file (or otherwise use separate resources).
 
    `xargs' also allows you to "turn up" or "turn down" its parallelism
 in the middle of a run.  Suppose you are keeping your four-processor
@@ -2452,7 +2499,7 @@ from 4 to 3).  The second `kill' will reduce it from 3 to 2.  (`%4'
 works in some shells as a shorthand for the process ID of the
 background job labeled `[4]'.)
 
-   Similarly, if you started a long xargs job without parallelism, you
+   Similarly, if you started a long `xargs' job without parallelism, you
 can easily switch it to start running two commands in parallel by
 sending it a `SIGUSR1'.
 
@@ -2505,7 +2552,7 @@ operation is equivalent to `find -exec' (*note Single File::).
 
    When you use the `-I' option, each line read from the input is
 buffered internally.  This means that there is an upper limit on the
-length of input line that xargs will accept when used with the `-I'
+length of input line that `xargs' will accept when used with the `-I'
 option.  To work around this limitation, you can use the `-s' option to
 increase the amount of buffer space that xargs uses, and you can also
 use an extra invocation of xargs to ensure that very long lines do not
@@ -2545,15 +2592,16 @@ primary `-ok' instead of `-exec':
 
      The response to the prompt is matched against a pair of regular
      expressions to determine if it is a yes or no response.  These
-     regular expressions are obtained from the system(1) if the
-     POSIXLY_CORRECT environment variable is set and the system has
-     such patterns available.  Otherwise, `find''s message translations
-     are used.  In either case, the LC_MESSAGES environment variable
-     will determine the regular expressions used to determine if the
-     answer is affirmative or negative.  The interpretation of the
-     regular expressions themselves will be affected by the environment
-     variables LC_CTYPE (character classes) and LC_COLLATE (character
-     ranges and equivalence classes).
+     regular expressions are obtained from the system (`nl_langinfo'
+     items YESEXPR and NOEXPR are used) if the `POSIXLY_CORRECT'
+     environment variable is set and the system has such patterns
+     available.  Otherwise, `find''s message translations are used.  In
+     either case, the `LC_MESSAGES' environment variable will determine
+     the regular expressions used to determine if the answer is
+     affirmative or negative.  The interpretation of the regular
+     expressions themselves will be affected by the environment
+     variables `LC_CTYPE' (character classes) and `LC_COLLATE'
+     (character ranges and equivalence classes).
 
  -- Action: -ok command ;
      This insecure variant of the `-okdir' action is specified by
@@ -2574,10 +2622,6 @@ invocation of the command (*note Limiting Command Size::).
      Prompt the user about whether to run each command line and read a
      line from the terminal.  Only run the command line if the response
      starts with `y' or `Y'.  Implies `-t'.
-
-   ---------- Footnotes ----------
-
-   (1) `nl_langinfo' items YESEXPR and NOEXPR are used
 
 
 File: find.info,  Node: Delete Files,  Next: Adding Tests,  Prev: Run Commands,  Up: Actions
@@ -2760,7 +2804,7 @@ entry begins with an offset-differential count byte, which is the
 additional number of characters of prefix of the preceding entry to use
 beyond the number that the preceding entry is using of its predecessor.
 (The counts can be negative.)  Following the count is a null-terminated
-ASCII remainder--the part of the name that follows the shared prefix.
+ASCII remainder - the part of the name that follows the shared prefix.
 
    If the offset-differential count is larger than can be stored in a
 byte (+/-127), the byte has the value 0x80 and the count follows in a
@@ -2825,7 +2869,8 @@ them.  The second byte of the database is zero.  The second byte is
 immediately followed by the first database entry.  The first entry in
 the database is not preceded by any differential count or dummy entry.
 Instead the differential count for the first item is assumed to be zero.
-.P Starting with the second entry (if any) in the database, data is
+
+   Starting with the second entry (if any) in the database, data is
 interpreted as for the GNU LOCATE02 format.
 
 
@@ -3356,7 +3401,7 @@ starting with the lowest valued bit:
 `ug=rw,o=r'.  Numeric mode 0 corresponds to symbolic mode `a='.
 
 
-File: find.info,  Node: Date input formats,  Next: Reference,  Prev: File Permissions,  Up: Top
+File: find.info,  Node: Date input formats,  Next: Configuration,  Prev: File Permissions,  Up: Top
 
 6 Date input formats
 ********************
@@ -3385,7 +3430,7 @@ First, a quote:
      future, last Tuesday or a week from Sunday, with feelings of
      helpless confusion.  ...
 
-     -- Robert Grudin, `Time and the Art of Living'.
+     --Robert Grudin, `Time and the Art of Living'.
 
    This section describes the textual date representations that GNU
 programs accept.  These are the strings you, as a user, can supply as
@@ -3397,7 +3442,8 @@ arguments to the various programs.  The C interface (via the
 * General date syntax::            Common rules.
 * Calendar date items::            19 Dec 1994.
 * Time of day items::              9:20pm.
-* Time zone items::                EST, PDT, GMT.
+* Time zone items::                EST, PDT, UTC, ...
+* Combined date and time of day items:: 1972-09-24T20:02:00,000000-0500.
 * Day of week items::              Monday and others.
 * Relative items in date strings:: next tuesday, 2 years ago.
 * Pure numbers in date strings::   19931219, 1440.
@@ -3422,6 +3468,8 @@ items:
    * time of day items
 
    * time zone items
+
+   * combined date and time of day items
 
    * day of the week items
 
@@ -3460,8 +3508,8 @@ zone items other than `UTC' and `Z'.  Here are some ways to do this:
      Mon Mar  1 00:21:42 UTC 2004
      $ TZ=UTC0 date +'%Y-%m-%d %H:%M:%SZ'
      2004-03-01 00:21:42Z
-     $ date --iso-8601=ns | tr T ' '  # --iso-8601 is a GNU extension.
-     2004-02-29 16:21:42,692722128-0800
+     $ date --rfc-3339=ns  # --rfc-3339 is a GNU extension.
+     2004-02-29 16:21:42.692722128-08:00
      $ date --rfc-2822  # a GNU extension
      Sun, 29 Feb 2004 16:21:42 -0800
      $ date +'%Y-%m-%d %H:%M:%S %z'  # %z is a GNU extension.
@@ -3582,7 +3630,7 @@ maximum zone correction is 24 hours.
 both.
 
 
-File: find.info,  Node: Time zone items,  Next: Day of week items,  Prev: Time of day items,  Up: Date input formats
+File: find.info,  Node: Time zone items,  Next: Combined date and time of day items,  Prev: Time of day items,  Up: Date input formats
 
 6.4 Time zone items
 ===================
@@ -3608,9 +3656,31 @@ time stamps are interpreted using the rules of the default time zone
 (*note Specifying time zone rules::).
 
 
-File: find.info,  Node: Day of week items,  Next: Relative items in date strings,  Prev: Time zone items,  Up: Date input formats
+File: find.info,  Node: Combined date and time of day items,  Next: Day of week items,  Prev: Time zone items,  Up: Date input formats
 
-6.5 Day of week items
+6.5 Combined date and time of day items
+=======================================
+
+The ISO 8601 date and time of day extended format consists of an ISO
+8601 date, a `T' character separator, and an ISO 8601 time of day.
+This format is also recognized if the `T' is replaced by a space.
+
+   In this format, the time of day should use 24-hour notation.
+Fractional seconds are allowed, with either comma or period preceding
+the fraction.  ISO 8601 fractional minutes and hours are not supported.
+Typically, hosts support nanosecond timestamp resolution; excess
+precision is silently discarded.
+
+   Here are some examples:
+
+     2012-09-24T20:02:00.052-0500
+     2012-12-31T23:59:59,999999999+1100
+     1970-01-01 00:00Z
+
+
+File: find.info,  Node: Day of week items,  Next: Relative items in date strings,  Prev: Combined date and time of day items,  Up: Date input formats
+
+6.6 Day of week items
 =====================
 
 The explicit mention of a day of the week will forward the date (only
@@ -3633,7 +3703,7 @@ represent.
 
 File: find.info,  Node: Relative items in date strings,  Next: Pure numbers in date strings,  Prev: Day of week items,  Up: Date input formats
 
-6.6 Relative items in date strings
+6.7 Relative items in date strings
 ==================================
 
 "Relative items" adjust a date (or the current date if none) forward or
@@ -3697,7 +3767,7 @@ before embarking on calendrical calculations.
 
 File: find.info,  Node: Pure numbers in date strings,  Next: Seconds since the Epoch,  Prev: Relative items in date strings,  Up: Date input formats
 
-6.7 Pure numbers in date strings
+6.8 Pure numbers in date strings
 ================================
 
 The precise interpretation of a pure decimal number depends on the
@@ -3720,7 +3790,7 @@ overrides the year.
 
 File: find.info,  Node: Seconds since the Epoch,  Next: Specifying time zone rules,  Prev: Pure numbers in date strings,  Up: Date input formats
 
-6.8 Seconds since the Epoch
+6.9 Seconds since the Epoch
 ===========================
 
 If you precede a number with `@', it represents an internal time stamp
@@ -3752,8 +3822,8 @@ way to represent the intervening leap second 1998-12-31 23:59:60 UTC.
 
 File: find.info,  Node: Specifying time zone rules,  Next: Authors of parse_datetime,  Prev: Seconds since the Epoch,  Up: Date input formats
 
-6.9 Specifying time zone rules
-==============================
+6.10 Specifying time zone rules
+===============================
 
 Normally, dates are interpreted using the rules of the current time
 zone, which in turn are specified by the `TZ' environment variable, or
@@ -3800,7 +3870,7 @@ Variable.
 
 File: find.info,  Node: Authors of parse_datetime,  Prev: Specifying time zone rules,  Up: Date input formats
 
-6.10 Authors of `parse_datetime'
+6.11 Authors of `parse_datetime'
 ================================
 
 `parse_datetime' started life as `getdate', as originally implemented
@@ -3821,9 +3891,82 @@ environment variable and external file, and lacks the thread-safety of
 and then edited by K. Berry (<kb@cs.umb.edu>).
 
 
-File: find.info,  Node: Reference,  Next: Common Tasks,  Prev: Date input formats,  Up: Top
+File: find.info,  Node: Configuration,  Next: Reference,  Prev: Date input formats,  Up: Top
 
-7 Reference
+7 Configuration
+***************
+
+The findutils source distribution includes a `configure' script which
+examines the system and generates files required to build findutils.
+See the files `README' and `INSTALL'.
+
+   A number of options can be specified on the `configure' command
+line, and many of these are straightforward, adequately documented in
+the `--help' output, or not normally useful.   Options which are useful
+or which are not obvious are explained here.
+
+* Menu:
+
+* Leaf Optimisation::        Take advantage of Unix file system semantics.
+* d_type Optimisation::      Take advantage of file type information.
+* fts::                      A non-recursive file system search.
+
+
+File: find.info,  Node: Leaf Optimisation,  Next: d_type Optimisation,  Up: Configuration
+
+7.1 Leaf Optimisation
+=====================
+
+Files in Unix file systems have a link count which indicates how many
+names point to the same inode.  Directories in Unix filssytems have a
+`..' entry which functions as a hard link to the parent directory and a
+`.' entry which functions as a link to the directory itself.  The `..'
+entry of the root directory also points to the root.  This means that
+`find' can deduce the number of subdirectories a directory has, simply
+by subtracting 2 from the directory's link count.  This allows `find'
+the calls to `stat' which would otherwise be needed to discover which
+directory entries are subdirectories.
+
+   File systems which don't have these semantics should simply return a
+value less than 2 in the `st_nlinks' member of `struct stat' in
+response to a successful call to `stat'.
+
+   If you are building `find' for a system on which the value of
+`st_nlinks' is unreliable, you can specify
+`--disable-leaf-optimisation' to `configure' to prevent this assumption
+being made.
+
+
+File: find.info,  Node: d_type Optimisation,  Next: fts,  Prev: Leaf Optimisation,  Up: Configuration
+
+7.2 d_type Optimisation
+=======================
+
+When this feature is enabled, `find' takes advantage of the fact that
+on some systems `readdir' will return the type of a file in `struct
+dirent'.
+
+
+File: find.info,  Node: fts,  Prev: d_type Optimisation,  Up: Configuration
+
+7.3 fts
+=======
+
+The findutils source distribution contains two different
+implementations of `find'.  The older implementation descends the file
+system recursively, while the newer one uses `fts'.  Both are normally
+installed.
+
+   If the option `--without-fts' was passed to `configure', the
+recursive implementation is installed as `find' and the fts-based
+implementation is installed as `ftsfind'. Otherwise, the fts-based
+implementation is installed as `find' and the recursive implementation
+is installed as `oldfind'.
+
+
+File: find.info,  Node: Reference,  Next: Common Tasks,  Prev: Configuration,  Up: Top
+
+8 Reference
 ***********
 
 Below are summaries of the command line syntax for the programs
@@ -3841,7 +3984,7 @@ discussed in this manual.
 
 File: find.info,  Node: Invoking find,  Next: Invoking locate,  Up: Reference
 
-7.1 Invoking `find'
+8.1 Invoking `find'
 ===================
 
      find [-H] [-L] [-P] [-D DEBUGOPTIONS] [-OLEVEL] [FILE...] [EXPRESSION]
@@ -3887,7 +4030,7 @@ use:
 
 File: find.info,  Node: Filesystem Traversal Options,  Next: Warning Messages,  Up: Invoking find
 
-7.1.1 Filesystem Traversal Options
+8.1.1 Filesystem Traversal Options
 ----------------------------------
 
 The options `-H', `-L' or `-P' may be specified at the start of the
@@ -3916,7 +4059,7 @@ symbolic links are handled.
 
 File: find.info,  Node: Warning Messages,  Next: Optimisation Options,  Prev: Filesystem Traversal Options,  Up: Invoking find
 
-7.1.2 Warning Messages
+8.1.2 Warning Messages
 ----------------------
 
 If there is an error on the `find' command line, an error message is
@@ -3926,8 +4069,9 @@ but which `find' should still accept.  Under these circumstances,
 
    By default, warnings are enabled only if `find' is being run
 interactively (specifically, if the standard input is a terminal) and
-the POSIXLY_CORRECT environment variable is not set.  Warning messages
-can be controlled explicitly by the use of options on the command line:
+the `POSIXLY_CORRECT' environment variable is not set.  Warning
+messages can be controlled explicitly by the use of options on the
+command line:
 
 `-warn'
      Issue warning messages where appropriate.
@@ -3968,7 +4112,7 @@ problems, and consequently cannot be turned off:
 
 File: find.info,  Node: Optimisation Options,  Next: Debug Options,  Prev: Warning Messages,  Up: Invoking find
 
-7.1.3 Optimisation Options
+8.1.3 Optimisation Options
 --------------------------
 
 The `-OLEVEL' option sets `find''s optimisation level to LEVEL.  The
@@ -4013,7 +4157,7 @@ optimisations performed at each optimisation level are as follows.
 
 File: find.info,  Node: Debug Options,  Next: Find Expressions,  Prev: Optimisation Options,  Up: Invoking find
 
-7.1.4 Debug Options
+8.1.4 Debug Options
 -------------------
 
 The `-D' option makes `find' produce diagnostic output.  Much of the
@@ -4045,7 +4189,7 @@ help'.  Valid debug options include:
 
 File: find.info,  Node: Find Expressions,  Prev: Debug Options,  Up: Invoking find
 
-7.1.5 Find Expressions
+8.1.5 Find Expressions
 ----------------------
 
 The final part of the `find' command line is a list of expressions.
@@ -4056,7 +4200,7 @@ options that the expression can contain.  If the expression is missing,
 
 File: find.info,  Node: Invoking locate,  Next: Invoking updatedb,  Prev: Invoking find,  Up: Reference
 
-7.2 Invoking `locate'
+8.2 Invoking `locate'
 =====================
 
      locate [OPTION...] PATTERN...
@@ -4217,20 +4361,10 @@ databases returning each match of PATTERN.
 
 File: find.info,  Node: Invoking updatedb,  Next: Invoking xargs,  Prev: Invoking locate,  Up: Reference
 
-7.3 Invoking `updatedb'
+8.3 Invoking `updatedb'
 =======================
 
      updatedb [OPTION...]
-
-   `updatedb' creates and updates the database of file names used by
-`locate'.  `updatedb' generates a list of files similar to the output
-of `find' and then uses utilities for optimizing the database for
-performance.  `updatedb' is often run periodically as a `cron' job and
-configured with environment variables or command options.  Typically,
-operating systems have a shell script that "exports" configurations for
-variable definitions and uses another shell script that "sources" the
-configuration file into the environment and then executes `updatedb' in
-the environment.
 
    `updatedb' creates and updates the database of file names used by
 `locate'.  `updatedb' generates a list of files similar to the output
@@ -4312,7 +4446,7 @@ the environment.
 
 File: find.info,  Node: Invoking xargs,  Next: Regular Expressions,  Prev: Invoking updatedb,  Up: Reference
 
-7.4 Invoking `xargs'
+8.4 Invoking `xargs'
 ====================
 
      xargs [OPTION...] [COMMAND [INITIAL-ARGUMENTS]]
@@ -4351,7 +4485,7 @@ program died due to a fatal signal.
 
 File: find.info,  Node: xargs options,  Next: Invoking the shell from xargs,  Up: Invoking xargs
 
-7.4.1 xargs options
+8.4.1 xargs options
 -------------------
 
 `--arg-file=INPUTFILE'
@@ -4373,8 +4507,8 @@ File: find.info,  Node: xargs options,  Next: Invoking the shell from xargs,  Up
      Input file names are terminated by the specified character DELIM
      instead of by whitespace, and any quotes and backslash characters
      are not considered special (every character is taken literally).
-     Disables the end of file string, which is treated like any other
-     argument.
+     Disables the logical end of file marker string, which is treated
+     like any other argument.
 
      The specified delimiter may be a single character, a C-style
      character escape such as `\n', or an octal or hexadecimal escape
@@ -4384,14 +4518,20 @@ File: find.info,  Node: xargs options,  Next: Invoking the shell from xargs,  Up
 `-E EOF-STR'
 `--eof[=EOF-STR]'
 `-e[EOF-STR]'
-     Set the end of file string to EOF-STR.  If the end of file string
-     occurs as a line of input, the rest of the input is ignored.  If
-     EOF-STR is omitted (`-e') or blank (either `-e' or `-E'), there is
-     no end of file string.  The `-e' form of this option is deprecated
-     in favour of the POSIX-compliant `-E' option, which you should use
-     instead.  As of GNU xargs version 4.2.9, the default behaviour of
-     xargs is not to have a logical end-of-file marker.  The POSIX
+     Set the logical end of file marker string to EOF-STR.  If the
+     logical end of file marker string occurs as a line of input, the
+     rest of the input is ignored.  If EOF-STR is omitted (`-e') or
+     blank (either `-e' or `-E'), there is no logical end of file marker
+     string.  The `-e' form of this option is deprecated in favour of
+     the POSIX-compliant `-E' option, which you should use instead.  As
+     of GNU `xargs' version 4.2.9, the default behaviour of `xargs' is
+     not to have a logical end of file marker string.  The POSIX
      standard (IEEE Std 1003.1, 2004 Edition) allows this.
+
+     The logical end of file marker string is not treated specially if
+     the `-d' or the `-0' options are in effect.  That is, when either
+     of these options are in effect, the whole input file will be read
+     even if `-E' was used.
 
 `--help'
      Print a summary of the options to `xargs' and exit.
@@ -4464,10 +4604,16 @@ File: find.info,  Node: xargs options,  Next: Invoking the shell from xargs,  Up
      is 1.  If MAX-PROCS is 0, `xargs' will run as many processes as
      possible simultaneously.
 
+`--process-slot-var=ENVIRONMENT-VARIABLE-NAME'
+     Set the environment variable ENVIRONMENT-VARIABLE-NAME to a unique
+     value in each running child process.  Each value is a decimal
+     integer.  Values are reused once child processes exit.  This can be
+     used in a rudimentary load distribution scheme, for example.
+
 
 File: find.info,  Node: Invoking the shell from xargs,  Prev: xargs options,  Up: Invoking xargs
 
-7.4.2 Invoking the shell from xargs
+8.4.2 Invoking the shell from xargs
 -----------------------------------
 
 Normally, `xargs' will exec the command you specified directly, without
@@ -4501,11 +4647,11 @@ solve the more general problem.
      xargs -r0 sh -c 'mv "$@" /archive' move
 
    Here, a shell is being invoked.  There are two shell instances to
-think about.  The first is the shell which launches the xargs command
+think about.  The first is the shell which launches the `xargs' command
 (this might be the shell into which you are typing, for example).  The
 second is the shell launched by `xargs' (in fact it will probably
-launch several, one after the other, depending on how many files need
-to be archived).  We'll refer to this second shell as a subshell.
+launch several, one after the other, depending on how many files need to
+be archived).  We'll refer to this second shell as a subshell.
 
    Our example uses the `-c' option of `sh'.  Its argument is a shell
 command to be executed by the subshell.  Along with the rest of that
@@ -4549,7 +4695,7 @@ causes `xargs' to stop immediately.
 
 File: find.info,  Node: Regular Expressions,  Next: Environment Variables,  Prev: Invoking xargs,  Up: Reference
 
-7.5 Regular Expressions
+8.5 Regular Expressions
 =======================
 
 The `-regex' and `-iregex' tests of `find' allow matching by regular
@@ -4586,7 +4732,7 @@ should be one of the following:
 
 File: find.info,  Node: findutils-default regular expression syntax,  Next: awk regular expression syntax,  Up: Regular Expressions
 
-7.5.1 `findutils-default' regular expression syntax
+8.5.1 `findutils-default' regular expression syntax
 ---------------------------------------------------
 
 The character `.' matches any single character.
@@ -4672,7 +4818,7 @@ subexpressions within groups.
 
 File: find.info,  Node: awk regular expression syntax,  Next: egrep regular expression syntax,  Prev: findutils-default regular expression syntax,  Up: Regular Expressions
 
-7.5.2 `awk' regular expression syntax
+8.5.2 `awk' regular expression syntax
 -------------------------------------
 
 The character `.' matches any single character except the null
@@ -4695,8 +4841,8 @@ character.
    Bracket expressions are used to match ranges of characters.  Bracket
 expressions where the range is backward, for example `[z-a]', are
 invalid.  Within square brackets, `\' can be used to quote the
-following character.  Character classes are not supported, so for
-example you would need to use `[0-9]' instead of `[[:digit:]]'.
+following character.  Character classes are supported; for example
+`[[:digit:]]' will match a single decimal digit.
 
    GNU extensions are not supported and so `\w', `\W', `\<', `\>',
 `\b', `\B', `\`', and `\'' match `w', `W', `<', `>', `b', `B', ``', and
@@ -4729,7 +4875,7 @@ subexpressions within groups.
 
 File: find.info,  Node: egrep regular expression syntax,  Next: emacs regular expression syntax,  Prev: awk regular expression syntax,  Up: Regular Expressions
 
-7.5.3 `egrep' regular expression syntax
+8.5.3 `egrep' regular expression syntax
 ---------------------------------------
 
 The character `.' matches any single character except newline.
@@ -4795,7 +4941,7 @@ subexpressions within groups.
 
 File: find.info,  Node: emacs regular expression syntax,  Next: gnu-awk regular expression syntax,  Prev: egrep regular expression syntax,  Up: Regular Expressions
 
-7.5.4 `emacs' regular expression syntax
+8.5.4 `emacs' regular expression syntax
 ---------------------------------------
 
 The character `.' matches any single character except newline.
@@ -4881,7 +5027,7 @@ subexpressions within groups.
 
 File: find.info,  Node: gnu-awk regular expression syntax,  Next: grep regular expression syntax,  Prev: emacs regular expression syntax,  Up: Regular Expressions
 
-7.5.5 `gnu-awk' regular expression syntax
+8.5.5 `gnu-awk' regular expression syntax
 -----------------------------------------
 
 The character `.' matches any single character.
@@ -4947,6 +5093,9 @@ except:
   3. After the alternation operator `|'
 
 
+   Intervals are specified by `{' and `}'.  Invalid intervals are
+treated as literals, for example `a{1' is treated as `a\{1'
+
    The longest possible match is returned; this applies to the regular
 expression as a whole and (subject to this constraint) to
 subexpressions within groups.
@@ -4954,7 +5103,7 @@ subexpressions within groups.
 
 File: find.info,  Node: grep regular expression syntax,  Next: posix-awk regular expression syntax,  Prev: gnu-awk regular expression syntax,  Up: Regular Expressions
 
-7.5.6 `grep' regular expression syntax
+8.5.6 `grep' regular expression syntax
 --------------------------------------
 
 The character `.' matches any single character except newline.
@@ -5046,7 +5195,7 @@ subexpressions within groups.
 
 File: find.info,  Node: posix-awk regular expression syntax,  Next: posix-basic regular expression syntax,  Prev: grep regular expression syntax,  Up: Regular Expressions
 
-7.5.7 `posix-awk' regular expression syntax
+8.5.7 `posix-awk' regular expression syntax
 -------------------------------------------
 
 The character `.' matches any single character except the null
@@ -5099,8 +5248,8 @@ except the following places, where they are not allowed:
   3. After the alternation operator `|'
 
 
-   Intervals are specified by `{' and `}'.  Invalid intervals such as
-`a{1z' are not accepted.
+   Intervals are specified by `{' and `}'.  Invalid intervals are
+treated as literals, for example `a{1' is treated as `a\{1'
 
    The longest possible match is returned; this applies to the regular
 expression as a whole and (subject to this constraint) to
@@ -5109,7 +5258,7 @@ subexpressions within groups.
 
 File: find.info,  Node: posix-basic regular expression syntax,  Next: posix-egrep regular expression syntax,  Prev: posix-awk regular expression syntax,  Up: Regular Expressions
 
-7.5.8 `posix-basic' regular expression syntax
+8.5.8 `posix-basic' regular expression syntax
 ---------------------------------------------
 
 This is a synonym for ed.
@@ -5117,7 +5266,7 @@ This is a synonym for ed.
 
 File: find.info,  Node: posix-egrep regular expression syntax,  Next: posix-extended regular expression syntax,  Prev: posix-basic regular expression syntax,  Up: Regular Expressions
 
-7.5.9 `posix-egrep' regular expression syntax
+8.5.9 `posix-egrep' regular expression syntax
 ---------------------------------------------
 
 The character `.' matches any single character except newline.
@@ -5186,7 +5335,7 @@ subexpressions within groups.
 
 File: find.info,  Node: posix-extended regular expression syntax,  Prev: posix-egrep regular expression syntax,  Up: Regular Expressions
 
-7.5.10 `posix-extended' regular expression syntax
+8.5.10 `posix-extended' regular expression syntax
 -------------------------------------------------
 
 The character `.' matches any single character except the null
@@ -5263,50 +5412,50 @@ subexpressions within groups.
 
 File: find.info,  Node: Environment Variables,  Prev: Regular Expressions,  Up: Reference
 
-7.6 Environment Variables
+8.6 Environment Variables
 =========================
 
-LANG
+`LANG'
      Provides a default value for the internationalisation variables
      that are unset or null.
 
-LC_ALL
+`LC_ALL'
      If set to a non-empty string value, override the values of all the
      other internationalisation variables.
 
-LC_COLLATE
+`LC_COLLATE'
      The POSIX standard specifies that this variable affects the pattern
      matching to be used for the `\-name' option.  GNU find uses the
      GNU version of the `fnmatch' library function.
 
      This variable also affects the interpretation of the response to
-     `-ok'; while the LC_MESSAGES variable selects the actual pattern
+     `-ok'; while the `LC_MESSAGES' variable selects the actual pattern
      used to interpret the response to `-ok', the interpretation of any
      bracket expressions in the pattern will be affected by the
-     LC_COLLATE variable.
+     `LC_COLLATE' variable.
 
-LC_CTYPE
+`LC_CTYPE'
      This variable affects the treatment of character classes used in
      regular expression and with the `-name' test, if the `fnmatch'
      function supports this.
 
      This variable also affects the interpretation of any character
      classes in the regular expressions used to interpret the response
-     to the prompt issued by `-ok'.  The LC_CTYPE environment variable
-     will also affect which characters are considered to be unprintable
-     when filenames are printed (*note Unusual Characters in File
-     Names::).
+     to the prompt issued by `-ok'.  The `LC_CTYPE' environment
+     variable will also affect which characters are considered to be
+     unprintable when filenames are printed (*note Unusual Characters
+     in File Names::).
 
-LC_MESSAGES
+`LC_MESSAGES'
      Determines the locale to be used for internationalised messages,
      including the interpretation of the response to the prompt made by
      the `-ok' action.
 
-NLSPATH
+`NLSPATH'
      Determines the location of the internationalisation message
      catalogues.
 
-PATH
+`PATH'
      Affects the directories which are searched to find the executables
      invoked by `-exec', `-execdir' `-ok' and `-okdir'.  If the PATH
      environment variable includes the current directory (by explicitly
@@ -5315,9 +5464,9 @@ PATH
      *Note Security Considerations::, for a more detailed discussion of
      security matters.
 
-POSIXLY_CORRECT
+`POSIXLY_CORRECT'
      Determines the block size used by `-ls' and `-fls'.  If
-     POSIXLY_CORRECT is set, blocks are units of 512 bytes.  Otherwise
+     `POSIXLY_CORRECT' is set, blocks are units of 512 bytes.  Otherwise
      they are units of 1024 bytes.
 
      Setting this variable also turns off warning messages (that is,
@@ -5325,22 +5474,19 @@ POSIXLY_CORRECT
      from the output for `-ok', all messages printed on stderr are
      diagnostics and must result in a non-zero exit status.
 
-     Arguments to `-perm' beginning with `+' are treated differently
-     when POSIXLY_CORRECT is set. See *note -perm: Mode Bits.
-
-     When POSIXLY_CORRECT is set, the response to the prompt made by the
-     `-ok' action is interpreted according to the system's message
+     When `POSIXLY_CORRECT' is set, the response to the prompt made by
+     the `-ok' action is interpreted according to the system's message
      catalogue, as opposed to according to `find''s own message
      translations.
 
-TZ
+`TZ'
      Affects the time zone used for some of the time-related format
      directives of `-printf' and `-fprintf'.
 
 
 File: find.info,  Node: Common Tasks,  Next: Worked Examples,  Prev: Reference,  Up: Top
 
-8 Common Tasks
+9 Common Tasks
 **************
 
 The sections that follow contain some extended examples that both give
@@ -5359,7 +5505,7 @@ common real-world problems.
 
 File: find.info,  Node: Viewing And Editing,  Next: Archiving,  Up: Common Tasks
 
-8.1 Viewing And Editing
+9.1 Viewing And Editing
 =======================
 
 To view a list of files that meet certain criteria, simply run your
@@ -5376,7 +5522,7 @@ viewing program:
 
    Because there is a limit to the length of any individual command
 line, there is a limit to the number of files that can be handled in
-this way.  We can get around this difficulty by using xargs like this:
+this way.  We can get around this difficulty by using `xargs' like this:
 
      find /usr/include -name '*.h' | xargs grep -l mode_t > todo
      xargs --arg-file=todo emacs
@@ -5400,12 +5546,12 @@ the command line is used as `$0' by the shell that `xargs' launches.
 
 File: find.info,  Node: Archiving,  Next: Cleaning Up,  Prev: Viewing And Editing,  Up: Common Tasks
 
-8.2 Archiving
+9.2 Archiving
 =============
 
 You can pass a list of files produced by `find' to a file archiving
 program.  GNU `tar' and `cpio' can both read lists of file names from
-the standard input--either delimited by nulls (the safe way) or by
+the standard input - either delimited by nulls (the safe way) or by
 blanks (the lazy, risky default way).  To use null-delimited names,
 give them the `--null' option.  You can store a file archive in a file,
 write it on a tape, or send it over a network to extract on another
@@ -5444,7 +5590,7 @@ another:
 
 File: find.info,  Node: Cleaning Up,  Next: Strange File Names,  Prev: Archiving,  Up: Common Tasks
 
-8.3 Cleaning Up
+9.3 Cleaning Up
 ===============
 
 This section gives examples of removing unwanted files in various
@@ -5514,7 +5660,7 @@ effect and files in `dirname/foo' will be deleted too.
 
 File: find.info,  Node: Strange File Names,  Next: Fixing Permissions,  Prev: Cleaning Up,  Up: Common Tasks
 
-8.4 Strange File Names
+9.4 Strange File Names
 ======================
 
 `find' can help you remove or rename a file with strange characters in
@@ -5557,7 +5703,7 @@ printed, then use `-execdir' instead of `-okdir'.
 
 File: find.info,  Node: Fixing Permissions,  Next: Classifying Files,  Prev: Strange File Names,  Up: Common Tasks
 
-8.5 Fixing Permissions
+9.5 Fixing Permissions
 ======================
 
 Suppose you want to make sure that everyone can write to the
@@ -5573,7 +5719,7 @@ directories do _not_ have world write permission.
 
 File: find.info,  Node: Classifying Files,  Prev: Fixing Permissions,  Up: Common Tasks
 
-8.6 Classifying Files
+9.6 Classifying Files
 =====================
 
 If you want to classify a set of files into several groups based on
@@ -5595,8 +5741,8 @@ is one of the most time consuming parts of its work).
 
 File: find.info,  Node: Worked Examples,  Next: Security Considerations,  Prev: Common Tasks,  Up: Top
 
-9 Worked Examples
-*****************
+10 Worked Examples
+******************
 
 The tools in the findutils package, and in particular `find', have a
 large number of options.  This means that quite often, there is more
@@ -5617,8 +5763,8 @@ performed, and compares the different ways of achieving them.
 
 File: find.info,  Node: Deleting Files,  Next: Copying A Subset of Files,  Up: Worked Examples
 
-9.1 Deleting Files
-==================
+10.1 Deleting Files
+===================
 
 One of the most common tasks that `find' is used for is locating files
 that can be deleted.  This might include:
@@ -5635,8 +5781,8 @@ sophisticated ways of locating the files that need to be deleted.
 We'll assume that the files we want to delete are old files underneath
 `/var/tmp/stuff'.
 
-9.1.1 The Traditional Way
--------------------------
+10.1.1 The Traditional Way
+--------------------------
 
 The traditional way to delete files in `/var/tmp/stuff' that have not
 been modified in over 90 days would have been:
@@ -5670,8 +5816,8 @@ technique will usually work, it will suddenly fail when there are lots
 of files to delete.  Since the task is to delete unwanted files, this
 is precisely the time we don't want things to go wrong.
 
-9.1.2 Making Use of xargs
--------------------------
+10.1.2 Making Use of `xargs'
+----------------------------
 
 So, is there a way to be more efficient in the use of `fork()' and
 `exec()' without running up against this limit?  Yes, we can be almost
@@ -5697,14 +5843,14 @@ given the limits on command line length.
 is widely implemented (all modern versions of Unix offer it).  So far
 then, the news is all good.  However, there is bad news too.
 
-9.1.3 Unusual characters in filenames
--------------------------------------
+10.1.3 Unusual characters in filenames
+--------------------------------------
 
 Unix-like systems allow any characters to appear in file names with the
 exception of the ASCII NUL character and the slash.  Slashes can occur
 in path names (as the directory separator) but not in the names of
 actual directory entries.  This means that the list of files that
-`xargs' reads could in fact contain white space characters -- spaces,
+`xargs' reads could in fact contain white space characters - spaces,
 tabs and newline characters.  Since by default, `xargs' assumes that
 the list of files it is reading uses white space as an argument
 separator, it cannot correctly handle the case where a filename
@@ -5736,8 +5882,8 @@ portable construct; although other versions of Unix (notably
 BSD-derived ones) support `-print0', it's not universal.  So, is there
 a more universal mechanism?
 
-9.1.4 Going back to -exec
--------------------------
+10.1.4 Going back to `-exec'
+----------------------------
 
 There is indeed a more universal mechanism, which is a slight
 modification to the `-exec' action.  The normal `-exec' action assumes
@@ -5759,8 +5905,8 @@ findutils did not support `-exec ... +' until version 4.2.12; one of
 the reasons for this is that it already had the `-print0' action in any
 case.
 
-9.1.5 A more secure version of -exec
-------------------------------------
+10.1.5 A more secure version of `-exec'
+---------------------------------------
 
 The command above seems to be efficient and portable.  However, within
 it lurks a security problem.  The problem is shared with all the
@@ -5827,8 +5973,8 @@ how many files we actually need to delete from each directory.
 processing, no.  However, in the specific case of deleting files it is
 indeed possible to do better.
 
-9.1.6 Using the -delete action
-------------------------------
+10.1.6 Using the `-delete' action
+---------------------------------
 
 The most efficient and secure method of solving this problem is to use
 the `-delete' action:
@@ -5846,8 +5992,8 @@ action has.
    The `-delete' action was introduced by the BSD family of operating
 systems.
 
-9.1.7 Improving things still further
-------------------------------------
+10.1.7 Improving things still further
+-------------------------------------
 
 Is it possible to improve things still further?  Not without either
 modifying the system library to the operating system or having more
@@ -5900,8 +6046,8 @@ things:
    * Other activity - are other programs also doing things on those
      disks?
 
-9.1.8 Conclusion
-----------------
+10.1.8 Conclusion
+-----------------
 
 The fastest and most secure way to delete files with the help of `find'
 is to use `-delete'.  Using `xargs -0 -P N' can also make effective use
@@ -5920,8 +6066,8 @@ insecure and isn't supported by versions of GNU findutils prior to
 
 File: find.info,  Node: Copying A Subset of Files,  Next: Updating A Timestamp File,  Prev: Deleting Files,  Up: Worked Examples
 
-9.2 Copying A Subset of Files
-=============================
+10.2 Copying A Subset of Files
+==============================
 
 Suppose you want to copy some files from `/source-dir' to `/dest-dir',
 but there are a small number of files in `/source-dir' you don't want
@@ -5963,8 +6109,8 @@ command in the pipeline).
 
 File: find.info,  Node: Updating A Timestamp File,  Next: Finding the Shallowest Instance,  Prev: Copying A Subset of Files,  Up: Worked Examples
 
-9.3 Updating A Timestamp File
-=============================
+10.3 Updating A Timestamp File
+==============================
 
 Suppose we have a directory full of files which is maintained with a
 set of automated tools; perhaps one set of tools updates them and
@@ -5976,10 +6122,10 @@ file which gives the timestamp on the newest file in the collection.
    We can use `find' to achieve this, but there are several different
 ways to do it.
 
-9.3.1 Updating the Timestamp The Wrong Way
-------------------------------------------
+10.3.1 Updating the Timestamp The Wrong Way
+-------------------------------------------
 
-The obvious but wrong answer is just to use `-newer':-
+The obvious but wrong answer is just to use `-newer':
 
      find subdir -newer timestamp -exec touch -r {} timestamp \;
 
@@ -5994,8 +6140,8 @@ be different, this could well be the wrong value.
 modification time of `timestamp' every time a file is to be compared
 against it, but that will reduce the performance of `find'.
 
-9.3.2 Using the test utility to compare timestamps
---------------------------------------------------
+10.3.2 Using the test utility to compare timestamps
+---------------------------------------------------
 
 The `test' command can be used to compare timestamps:
 
@@ -6006,8 +6152,8 @@ The `test' command can be used to compare timestamps:
 into account.  This resolves our earlier problem, but unfortunately
 this runs much more slowly.
 
-9.3.3 A combined approach
--------------------------
+10.3.3 A combined approach
+--------------------------
 
 We can of course still use `-newer' to cut down on the number of calls
 to `test':
@@ -6024,8 +6170,8 @@ timestamp.
    This is indeed faster in general, but the speed difference will
 depend on how many updated files there are.
 
-9.3.4 Using -printf and sort to compare timestamps
---------------------------------------------------
+10.3.4 Using `-printf' and `sort' to compare timestamps
+-------------------------------------------------------
 
 It is possible to use the `-printf' action to abandon the use of `test'
 entirely:
@@ -6053,8 +6199,8 @@ information at a granularity which is finer than one second.  Findutils
 version 4.3.3 and later will print a fractional part with %A@, but
 older versions will not.
 
-9.3.5 Solving the problem with make
------------------------------------
+10.3.5 Solving the problem with `make'
+--------------------------------------
 
 Another tool which often works with timestamps is `make'.  We can use
 `find' to generate a `Makefile' file on the fly and then use `make' to
@@ -6072,8 +6218,8 @@ update the timestamps:
 to cope with white space within file names, and adjusting it to do so
 would require a rather complex shell script.
 
-9.3.6 Coping with odd filenames too
------------------------------------
+10.3.6 Coping with odd filenames too
+------------------------------------
 
 We can fix both of these problems (looping and problems with white
 space), and do things more efficiently too.  The following command
@@ -6088,7 +6234,7 @@ works with newlines and doesn't need to sort the list of filenames.
 than the original timestamp file, and prints a list of them with their
 timestamps.  The `newest.pl' script simply filters out all the
 filenames which have timestamps which are older than whatever the
-newest file is:-
+newest file is:
 
      #! /usr/bin/perl -0
      my @newest = ();
@@ -6114,8 +6260,8 @@ file, the timestamp is updated.
 
 File: find.info,  Node: Finding the Shallowest Instance,  Prev: Updating A Timestamp File,  Up: Worked Examples
 
-9.4 Finding the Shallowest Instance
-===================================
+10.4 Finding the Shallowest Instance
+====================================
 
 Suppose you maintain local copies of sources from various projects,
 each with their own choice of directory organisation and source code
@@ -6159,7 +6305,7 @@ searching a large portion of the structure, saving a good deal of time.
 
 File: find.info,  Node: Security Considerations,  Next: Error Messages,  Prev: Worked Examples,  Up: Top
 
-10 Security Considerations
+11 Security Considerations
 **************************
 
 Security considerations are important if you are using `find' or
@@ -6192,7 +6338,7 @@ on what the system is going to do with the files found by `find'.
 
 File: find.info,  Node: Levels of Risk,  Next: Security Considerations for find,  Up: Security Considerations
 
-10.1 Levels of Risk
+11.1 Levels of Risk
 ===================
 
 There are some security risks inherent in the use of `find', `xargs'
@@ -6238,7 +6384,7 @@ exhaustive.
 
    If you are responsible for the operation of a system where the
 consequences of a security problem could be very important, you should
-do two things:-
+do two things:
 
   1. Define a security policy which defines who is allowed to do what
      on your system.
@@ -6256,7 +6402,7 @@ this way, and that's a deliberate choice
 
 File: find.info,  Node: Security Considerations for find,  Next: Security Considerations for xargs,  Prev: Levels of Risk,  Up: Security Considerations
 
-10.2 Security Considerations for `find'
+11.2 Security Considerations for `find'
 =======================================
 
 Some of the actions `find' might take have a direct effect; these
@@ -6312,8 +6458,8 @@ which would not normally be included in the search (defeating the
 
 File: find.info,  Node: Problems with -exec and filenames,  Next: Changing the Current Working Directory,  Up: Security Considerations for find
 
-10.2.1 Problems with -exec and filenames
-----------------------------------------
+11.2.1 Problems with `-exec' and filenames
+------------------------------------------
 
 It is safe in many cases to use the `-execdir' action with any file
 name.  Because `-execdir' prefixes the arguments it passes to programs
@@ -6353,7 +6499,7 @@ of a shell command.
 
 File: find.info,  Node: Changing the Current Working Directory,  Next: Race Conditions with -exec,  Prev: Problems with -exec and filenames,  Up: Security Considerations for find
 
-10.2.2 Changing the Current Working Directory
+11.2.2 Changing the Current Working Directory
 ---------------------------------------------
 
 As `find' searches the filesystem, it finds subdirectories and then
@@ -6384,44 +6530,50 @@ of your system.
 
 * Menu:
 
-* O_NOFOLLOW::                     Safely changing directory using fchdir().
-* Systems without O_NOFOLLOW::     Checking for symbolic links after chdir().
+* O_NOFOLLOW::                     Safely changing directory using `fchdir'.
+* Systems without O_NOFOLLOW::     Checking for symbolic links after `chdir'.
 
 
 File: find.info,  Node: O_NOFOLLOW,  Next: Systems without O_NOFOLLOW,  Up: Changing the Current Working Directory
 
-10.2.2.1 O_NOFOLLOW
-...................
+11.2.2.1 `O_NOFOLLOW'
+.....................
 
-If your system supports the O_NOFOLLOW flag (1) to the `open(2)' system
-call, `find' uses it to safely change directories.  The target
+If your system supports the `O_NOFOLLOW' flag (1) to the `open(2)'
+system call, `find' uses it to safely change directories.  The target
 directory is first opened and then `find' changes working directory
 with the `fchdir()' system call.  This ensures that symbolic links are
 not followed, preventing the sort of race condition attack in which use
 is made of symbolic links.
 
    If for any reason this approach does not work, `find' will fall back
-on the method which is normally used if O_NOFOLLOW is not supported.
+on the method which is normally used if `O_NOFOLLOW' is not supported.
 
-   You can tell if your system supports O_NOFOLLOW by running
+   You can tell if your system supports `O_NOFOLLOW' by running
 
      find --version
 
    This will tell you the version number and which features are enabled.
 For example, if I run this on my system now, this gives:
-     GNU find version 4.2.18-CVS
-     Features enabled: D_TYPE O_NOFOLLOW(enabled)
+     find (GNU findutils) 4.5.11-git
+     Copyright (C) 2012 Free Software Foundation, Inc.
+     License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+     This is free software: you are free to change and redistribute it.
+     There is NO WARRANTY, to the extent permitted by law.
+
+     Written by Eric B. Decker, James Youngman, and Kevin Dalley.
+     Features enabled: D_TYPE O_NOFOLLOW(enabled) LEAF_OPTIMISATION FTS(FTS_CWDFD) CBO(level=2)
 
    Here, you can see that I am running a version of `find' which was
-built from the development (CVS) code prior to the release of
-findutils-4.2.18, and that the D_TYPE and O_NOFOLLOW features are
-present.  O_NOFOLLOW is qualified with "enabled".  This simply means
-that the current system seems to support O_NOFOLLOW.  This check is
+built from the development (git) code prior to the release of
+findutils-4.5.12, and that several features including `O_NOFOLLOW' are
+present.  `O_NOFOLLOW' is qualified with "enabled".  This simply means
+that the current system seems to support `O_NOFOLLOW'.  This check is
 needed because it is possible to build `find' on a system that defines
-O_NOFOLLOW and then run it on a system that ignores the O_NOFOLLOW
+`O_NOFOLLOW' and then run it on a system that ignores the `O_NOFOLLOW'
 flag.  We try to detect such cases at startup by checking the operating
 system and version number; when this happens you will see
-"O_NOFOLLOW(disabled)" instead.
+`O_NOFOLLOW(disabled)' instead.
 
    ---------- Footnotes ----------
 
@@ -6431,11 +6583,11 @@ system and version number; when this happens you will see
 
 File: find.info,  Node: Systems without O_NOFOLLOW,  Prev: O_NOFOLLOW,  Up: Changing the Current Working Directory
 
-10.2.2.2 Systems without O_NOFOLLOW
-...................................
+11.2.2.2 Systems without `O_NOFOLLOW'
+.....................................
 
 The strategy for preventing this type of problem on systems that lack
-support for the O_NOFOLLOW flag is more complex.  Each time `find'
+support for the `O_NOFOLLOW' flag is more complex.  Each time `find'
 changes directory, it examines the directory it is about to move to,
 issues the `chdir()' system call, and then checks that it has ended up
 in the subdirectory it expected.  If all is as expected, processing
@@ -6447,7 +6599,7 @@ removing the old directory and replacing it with something else while
    Where a filesystem "automounter" is in use it can be the case that
 the use of the `chdir()' system call can itself cause a new filesystem
 to be mounted at that point.  On systems that do not support
-O_NOFOLLOW, this will cause `find''s security check to fail.
+`O_NOFOLLOW', this will cause `find''s security check to fail.
 
    However, this does not normally represent a security problem, since
 the automounter configuration is normally set up by the system
@@ -6475,8 +6627,8 @@ parent.  No operations would have been performed within that directory.
 
 File: find.info,  Node: Race Conditions with -exec,  Next: Race Conditions with -print and -print0,  Prev: Changing the Current Working Directory,  Up: Security Considerations for find
 
-10.2.3 Race Conditions with -exec
----------------------------------
+11.2.3 Race Conditions with `-exec'
+-----------------------------------
 
 The `-exec' action causes another program to be run.  It passes to the
 program the name of the file which is being considered at the time.
@@ -6527,8 +6679,8 @@ by untrusted users.  For similar reasons, `-execdir' does not allow
 
 File: find.info,  Node: Race Conditions with -print and -print0,  Prev: Race Conditions with -exec,  Up: Security Considerations for find
 
-10.2.4 Race Conditions with -print and -print0
-----------------------------------------------
+11.2.4 Race Conditions with `-print' and `-print0'
+--------------------------------------------------
 
 The `-print' and `-print0' actions can be used to produce a list of
 files matching some criteria, which can then be used with some other
@@ -6549,7 +6701,7 @@ action is less secure even than `-print0'.
 
 File: find.info,  Node: Security Considerations for xargs,  Next: Security Considerations for locate,  Prev: Security Considerations for find,  Up: Security Considerations
 
-10.3 Security Considerations for `xargs'
+11.3 Security Considerations for `xargs'
 ========================================
 
 The description of the race conditions affecting the `-print' action of
@@ -6599,10 +6751,10 @@ use that option.
 
 File: find.info,  Node: Security Considerations for locate,  Next: Security Summary,  Prev: Security Considerations for xargs,  Up: Security Considerations
 
-10.4 Security Considerations for `locate'
+11.4 Security Considerations for `locate'
 =========================================
 
-10.4.1 Race Conditions
+11.4.1 Race Conditions
 ----------------------
 
 It is fairly unusual for the output of `locate' to be fed into another
@@ -6613,7 +6765,7 @@ problems relating to whitespace in file names can be resolved by using
 associated with `find ... -print0'.  There is no way to avoid these
 problems in the case of `locate'.
 
-10.4.2 Long File Name Bugs with Old-Format Databases
+11.4.2 Long File Name Bugs with Old-Format Databases
 ----------------------------------------------------
 
 Old versions of `locate' have a bug in the way that old-format
@@ -6654,7 +6806,7 @@ installations and most users will not be affected by this problem.
 
 File: find.info,  Node: Security Summary,  Next: Further Reading on Security,  Prev: Security Considerations for locate,  Up: Security Considerations
 
-10.5 Summary
+11.5 Summary
 ============
 
 Where untrusted parties can create files on the system, or affect the
@@ -6677,7 +6829,7 @@ Informational use only
 
 File: find.info,  Node: Further Reading on Security,  Prev: Security Summary,  Up: Security Considerations
 
-10.6 Further Reading on Security
+11.6 Further Reading on Security
 ================================
 
 While there are a number of books on computer security, there are also
@@ -6707,7 +6859,7 @@ useful articles on the web that touch on the issues described above:
 
 File: find.info,  Node: Error Messages,  Next: GNU Free Documentation License,  Prev: Security Considerations,  Up: Top
 
-11 Error Messages
+12 Error Messages
 *****************
 
 This section describes some of the error messages sometimes made by
@@ -6734,7 +6886,7 @@ listed.
 
 File: find.info,  Node: Error Messages From find,  Next: Error Messages From xargs,  Up: Error Messages
 
-11.1 Error Messages From `find'
+12.1 Error Messages From `find'
 ===============================
 
 Most error messages produced by find are self-explanatory.  Error
@@ -6761,10 +6913,10 @@ making unwanted changes in the state of the terminal.
      These messages might appear when `find' moves into a directory and
      finds that the device number and inode are different from what it
      expected them to be.  If the directory `find' has moved into is on
-     an network filesystem (NFS), it will not issue this message,
-     because `automount' frequently mounts new filesystems on
-     directories as you move into them (that is how it knows you want
-     to use the filesystem).  So, if you do see this message, be wary --
+     a network filesystem (NFS), it will not issue this message, because
+     `automount' frequently mounts new filesystems on directories as
+     you move into them (that is how it knows you want to use the
+     filesystem).  So, if you do see this message, be wary -
      `automount' may not have been responsible.  Consider the
      possibility that someone else is manipulating the filesystem while
      `find' is running.  Some people might do this in order to mislead
@@ -6826,8 +6978,8 @@ making unwanted changes in the state of the terminal.
 
 File: find.info,  Node: Error Messages From xargs,  Next: Error Messages From locate,  Prev: Error Messages From find,  Up: Error Messages
 
-11.2 Error Messages From xargs
-==============================
+12.2 Error Messages From `xargs'
+================================
 
 `environment is too large for exec'
      This message means that you have so many environment variables set
@@ -6839,14 +6991,21 @@ File: find.info,  Node: Error Messages From xargs,  Next: Error Messages From lo
      exiting the current shell.  You can also use `xargs --show-limits'
      to understand the relevant sizes.
 
-`can not fit single argument within argument list size limit'
+`argument list too long'
      You are using the `-I' option and `xargs' doesn't have enough
      space to build a command line because it has read a really large
-     item and it doesn't fit.  You can probably work around this
+     item and it doesn't fit.  You may be able to work around this
      problem with the `-s' option, but the default size is pretty
      large.  This is a rare situation and is more likely an attempt to
      test the limits of `xargs', or break it.  Otherwise, you will need
      to try to shorten the problematic argument or not use `xargs'.
+
+`argument line too long'
+     You are using the `-L' or `-l' option and one of the input lines
+     is too long.  You may be able to work around this problem with the
+     `-s' option, but the default size is pretty large.  If you can
+     modify the your `xargs' command not to use `-L' or `-l', that will
+     be more likely to result in success.
 
 `cannot fork'
      See the description of the similar message for `find'.
@@ -6870,7 +7029,7 @@ File: find.info,  Node: Error Messages From xargs,  Next: Error Messages From lo
 
 File: find.info,  Node: Error Messages From locate,  Next: Error Messages From updatedb,  Prev: Error Messages From xargs,  Up: Error Messages
 
-11.3 Error Messages From `locate'
+12.3 Error Messages From `locate'
 =================================
 
 `warning: database `/usr/local/var/locatedb' is more than 8 days old'
@@ -6894,497 +7053,11 @@ File: find.info,  Node: Error Messages From locate,  Next: Error Messages From u
 
 File: find.info,  Node: Error Messages From updatedb,  Prev: Error Messages From locate,  Up: Error Messages
 
-11.4 Error Messages From updatedb
-=================================
+12.4 Error Messages From `updatedb'
+===================================
 
 The `updatedb' program (and the programs it invokes) do issue error
 messages, but none seem to be candidates for guidance.  If you are
 having a problem understanding one of these, ask for help on
 <bug-findutils@gnu.org>.
-
-
-File: find.info,  Node: GNU Free Documentation License,  Next: Primary Index,  Prev: Error Messages,  Up: Top
-
-Appendix A GNU Free Documentation License
-*****************************************
-
-                     Version 1.3, 3 November 2008
-
-     Copyright (C) 2000, 2001, 2002, 2007, 2008 Free Software Foundation, Inc.
-     `http://fsf.org/'
-
-     Everyone is permitted to copy and distribute verbatim copies
-     of this license document, but changing it is not allowed.
-
-  0. PREAMBLE
-
-     The purpose of this License is to make a manual, textbook, or other
-     functional and useful document "free" in the sense of freedom: to
-     assure everyone the effective freedom to copy and redistribute it,
-     with or without modifying it, either commercially or
-     noncommercially.  Secondarily, this License preserves for the
-     author and publisher a way to get credit for their work, while not
-     being considered responsible for modifications made by others.
-
-     This License is a kind of "copyleft", which means that derivative
-     works of the document must themselves be free in the same sense.
-     It complements the GNU General Public License, which is a copyleft
-     license designed for free software.
-
-     We have designed this License in order to use it for manuals for
-     free software, because free software needs free documentation: a
-     free program should come with manuals providing the same freedoms
-     that the software does.  But this License is not limited to
-     software manuals; it can be used for any textual work, regardless
-     of subject matter or whether it is published as a printed book.
-     We recommend this License principally for works whose purpose is
-     instruction or reference.
-
-  1. APPLICABILITY AND DEFINITIONS
-
-     This License applies to any manual or other work, in any medium,
-     that contains a notice placed by the copyright holder saying it
-     can be distributed under the terms of this License.  Such a notice
-     grants a world-wide, royalty-free license, unlimited in duration,
-     to use that work under the conditions stated herein.  The
-     "Document", below, refers to any such manual or work.  Any member
-     of the public is a licensee, and is addressed as "you".  You
-     accept the license if you copy, modify or distribute the work in a
-     way requiring permission under copyright law.
-
-     A "Modified Version" of the Document means any work containing the
-     Document or a portion of it, either copied verbatim, or with
-     modifications and/or translated into another language.
-
-     A "Secondary Section" is a named appendix or a front-matter section
-     of the Document that deals exclusively with the relationship of the
-     publishers or authors of the Document to the Document's overall
-     subject (or to related matters) and contains nothing that could
-     fall directly within that overall subject.  (Thus, if the Document
-     is in part a textbook of mathematics, a Secondary Section may not
-     explain any mathematics.)  The relationship could be a matter of
-     historical connection with the subject or with related matters, or
-     of legal, commercial, philosophical, ethical or political position
-     regarding them.
-
-     The "Invariant Sections" are certain Secondary Sections whose
-     titles are designated, as being those of Invariant Sections, in
-     the notice that says that the Document is released under this
-     License.  If a section does not fit the above definition of
-     Secondary then it is not allowed to be designated as Invariant.
-     The Document may contain zero Invariant Sections.  If the Document
-     does not identify any Invariant Sections then there are none.
-
-     The "Cover Texts" are certain short passages of text that are
-     listed, as Front-Cover Texts or Back-Cover Texts, in the notice
-     that says that the Document is released under this License.  A
-     Front-Cover Text may be at most 5 words, and a Back-Cover Text may
-     be at most 25 words.
-
-     A "Transparent" copy of the Document means a machine-readable copy,
-     represented in a format whose specification is available to the
-     general public, that is suitable for revising the document
-     straightforwardly with generic text editors or (for images
-     composed of pixels) generic paint programs or (for drawings) some
-     widely available drawing editor, and that is suitable for input to
-     text formatters or for automatic translation to a variety of
-     formats suitable for input to text formatters.  A copy made in an
-     otherwise Transparent file format whose markup, or absence of
-     markup, has been arranged to thwart or discourage subsequent
-     modification by readers is not Transparent.  An image format is
-     not Transparent if used for any substantial amount of text.  A
-     copy that is not "Transparent" is called "Opaque".
-
-     Examples of suitable formats for Transparent copies include plain
-     ASCII without markup, Texinfo input format, LaTeX input format,
-     SGML or XML using a publicly available DTD, and
-     standard-conforming simple HTML, PostScript or PDF designed for
-     human modification.  Examples of transparent image formats include
-     PNG, XCF and JPG.  Opaque formats include proprietary formats that
-     can be read and edited only by proprietary word processors, SGML or
-     XML for which the DTD and/or processing tools are not generally
-     available, and the machine-generated HTML, PostScript or PDF
-     produced by some word processors for output purposes only.
-
-     The "Title Page" means, for a printed book, the title page itself,
-     plus such following pages as are needed to hold, legibly, the
-     material this License requires to appear in the title page.  For
-     works in formats which do not have any title page as such, "Title
-     Page" means the text near the most prominent appearance of the
-     work's title, preceding the beginning of the body of the text.
-
-     The "publisher" means any person or entity that distributes copies
-     of the Document to the public.
-
-     A section "Entitled XYZ" means a named subunit of the Document
-     whose title either is precisely XYZ or contains XYZ in parentheses
-     following text that translates XYZ in another language.  (Here XYZ
-     stands for a specific section name mentioned below, such as
-     "Acknowledgements", "Dedications", "Endorsements", or "History".)
-     To "Preserve the Title" of such a section when you modify the
-     Document means that it remains a section "Entitled XYZ" according
-     to this definition.
-
-     The Document may include Warranty Disclaimers next to the notice
-     which states that this License applies to the Document.  These
-     Warranty Disclaimers are considered to be included by reference in
-     this License, but only as regards disclaiming warranties: any other
-     implication that these Warranty Disclaimers may have is void and
-     has no effect on the meaning of this License.
-
-  2. VERBATIM COPYING
-
-     You may copy and distribute the Document in any medium, either
-     commercially or noncommercially, provided that this License, the
-     copyright notices, and the license notice saying this License
-     applies to the Document are reproduced in all copies, and that you
-     add no other conditions whatsoever to those of this License.  You
-     may not use technical measures to obstruct or control the reading
-     or further copying of the copies you make or distribute.  However,
-     you may accept compensation in exchange for copies.  If you
-     distribute a large enough number of copies you must also follow
-     the conditions in section 3.
-
-     You may also lend copies, under the same conditions stated above,
-     and you may publicly display copies.
-
-  3. COPYING IN QUANTITY
-
-     If you publish printed copies (or copies in media that commonly
-     have printed covers) of the Document, numbering more than 100, and
-     the Document's license notice requires Cover Texts, you must
-     enclose the copies in covers that carry, clearly and legibly, all
-     these Cover Texts: Front-Cover Texts on the front cover, and
-     Back-Cover Texts on the back cover.  Both covers must also clearly
-     and legibly identify you as the publisher of these copies.  The
-     front cover must present the full title with all words of the
-     title equally prominent and visible.  You may add other material
-     on the covers in addition.  Copying with changes limited to the
-     covers, as long as they preserve the title of the Document and
-     satisfy these conditions, can be treated as verbatim copying in
-     other respects.
-
-     If the required texts for either cover are too voluminous to fit
-     legibly, you should put the first ones listed (as many as fit
-     reasonably) on the actual cover, and continue the rest onto
-     adjacent pages.
-
-     If you publish or distribute Opaque copies of the Document
-     numbering more than 100, you must either include a
-     machine-readable Transparent copy along with each Opaque copy, or
-     state in or with each Opaque copy a computer-network location from
-     which the general network-using public has access to download
-     using public-standard network protocols a complete Transparent
-     copy of the Document, free of added material.  If you use the
-     latter option, you must take reasonably prudent steps, when you
-     begin distribution of Opaque copies in quantity, to ensure that
-     this Transparent copy will remain thus accessible at the stated
-     location until at least one year after the last time you
-     distribute an Opaque copy (directly or through your agents or
-     retailers) of that edition to the public.
-
-     It is requested, but not required, that you contact the authors of
-     the Document well before redistributing any large number of
-     copies, to give them a chance to provide you with an updated
-     version of the Document.
-
-  4. MODIFICATIONS
-
-     You may copy and distribute a Modified Version of the Document
-     under the conditions of sections 2 and 3 above, provided that you
-     release the Modified Version under precisely this License, with
-     the Modified Version filling the role of the Document, thus
-     licensing distribution and modification of the Modified Version to
-     whoever possesses a copy of it.  In addition, you must do these
-     things in the Modified Version:
-
-       A. Use in the Title Page (and on the covers, if any) a title
-          distinct from that of the Document, and from those of
-          previous versions (which should, if there were any, be listed
-          in the History section of the Document).  You may use the
-          same title as a previous version if the original publisher of
-          that version gives permission.
-
-       B. List on the Title Page, as authors, one or more persons or
-          entities responsible for authorship of the modifications in
-          the Modified Version, together with at least five of the
-          principal authors of the Document (all of its principal
-          authors, if it has fewer than five), unless they release you
-          from this requirement.
-
-       C. State on the Title page the name of the publisher of the
-          Modified Version, as the publisher.
-
-       D. Preserve all the copyright notices of the Document.
-
-       E. Add an appropriate copyright notice for your modifications
-          adjacent to the other copyright notices.
-
-       F. Include, immediately after the copyright notices, a license
-          notice giving the public permission to use the Modified
-          Version under the terms of this License, in the form shown in
-          the Addendum below.
-
-       G. Preserve in that license notice the full lists of Invariant
-          Sections and required Cover Texts given in the Document's
-          license notice.
-
-       H. Include an unaltered copy of this License.
-
-       I. Preserve the section Entitled "History", Preserve its Title,
-          and add to it an item stating at least the title, year, new
-          authors, and publisher of the Modified Version as given on
-          the Title Page.  If there is no section Entitled "History" in
-          the Document, create one stating the title, year, authors,
-          and publisher of the Document as given on its Title Page,
-          then add an item describing the Modified Version as stated in
-          the previous sentence.
-
-       J. Preserve the network location, if any, given in the Document
-          for public access to a Transparent copy of the Document, and
-          likewise the network locations given in the Document for
-          previous versions it was based on.  These may be placed in
-          the "History" section.  You may omit a network location for a
-          work that was published at least four years before the
-          Document itself, or if the original publisher of the version
-          it refers to gives permission.
-
-       K. For any section Entitled "Acknowledgements" or "Dedications",
-          Preserve the Title of the section, and preserve in the
-          section all the substance and tone of each of the contributor
-          acknowledgements and/or dedications given therein.
-
-       L. Preserve all the Invariant Sections of the Document,
-          unaltered in their text and in their titles.  Section numbers
-          or the equivalent are not considered part of the section
-          titles.
-
-       M. Delete any section Entitled "Endorsements".  Such a section
-          may not be included in the Modified Version.
-
-       N. Do not retitle any existing section to be Entitled
-          "Endorsements" or to conflict in title with any Invariant
-          Section.
-
-       O. Preserve any Warranty Disclaimers.
-
-     If the Modified Version includes new front-matter sections or
-     appendices that qualify as Secondary Sections and contain no
-     material copied from the Document, you may at your option
-     designate some or all of these sections as invariant.  To do this,
-     add their titles to the list of Invariant Sections in the Modified
-     Version's license notice.  These titles must be distinct from any
-     other section titles.
-
-     You may add a section Entitled "Endorsements", provided it contains
-     nothing but endorsements of your Modified Version by various
-     parties--for example, statements of peer review or that the text
-     has been approved by an organization as the authoritative
-     definition of a standard.
-
-     You may add a passage of up to five words as a Front-Cover Text,
-     and a passage of up to 25 words as a Back-Cover Text, to the end
-     of the list of Cover Texts in the Modified Version.  Only one
-     passage of Front-Cover Text and one of Back-Cover Text may be
-     added by (or through arrangements made by) any one entity.  If the
-     Document already includes a cover text for the same cover,
-     previously added by you or by arrangement made by the same entity
-     you are acting on behalf of, you may not add another; but you may
-     replace the old one, on explicit permission from the previous
-     publisher that added the old one.
-
-     The author(s) and publisher(s) of the Document do not by this
-     License give permission to use their names for publicity for or to
-     assert or imply endorsement of any Modified Version.
-
-  5. COMBINING DOCUMENTS
-
-     You may combine the Document with other documents released under
-     this License, under the terms defined in section 4 above for
-     modified versions, provided that you include in the combination
-     all of the Invariant Sections of all of the original documents,
-     unmodified, and list them all as Invariant Sections of your
-     combined work in its license notice, and that you preserve all
-     their Warranty Disclaimers.
-
-     The combined work need only contain one copy of this License, and
-     multiple identical Invariant Sections may be replaced with a single
-     copy.  If there are multiple Invariant Sections with the same name
-     but different contents, make the title of each such section unique
-     by adding at the end of it, in parentheses, the name of the
-     original author or publisher of that section if known, or else a
-     unique number.  Make the same adjustment to the section titles in
-     the list of Invariant Sections in the license notice of the
-     combined work.
-
-     In the combination, you must combine any sections Entitled
-     "History" in the various original documents, forming one section
-     Entitled "History"; likewise combine any sections Entitled
-     "Acknowledgements", and any sections Entitled "Dedications".  You
-     must delete all sections Entitled "Endorsements."
-
-  6. COLLECTIONS OF DOCUMENTS
-
-     You may make a collection consisting of the Document and other
-     documents released under this License, and replace the individual
-     copies of this License in the various documents with a single copy
-     that is included in the collection, provided that you follow the
-     rules of this License for verbatim copying of each of the
-     documents in all other respects.
-
-     You may extract a single document from such a collection, and
-     distribute it individually under this License, provided you insert
-     a copy of this License into the extracted document, and follow
-     this License in all other respects regarding verbatim copying of
-     that document.
-
-  7. AGGREGATION WITH INDEPENDENT WORKS
-
-     A compilation of the Document or its derivatives with other
-     separate and independent documents or works, in or on a volume of
-     a storage or distribution medium, is called an "aggregate" if the
-     copyright resulting from the compilation is not used to limit the
-     legal rights of the compilation's users beyond what the individual
-     works permit.  When the Document is included in an aggregate, this
-     License does not apply to the other works in the aggregate which
-     are not themselves derivative works of the Document.
-
-     If the Cover Text requirement of section 3 is applicable to these
-     copies of the Document, then if the Document is less than one half
-     of the entire aggregate, the Document's Cover Texts may be placed
-     on covers that bracket the Document within the aggregate, or the
-     electronic equivalent of covers if the Document is in electronic
-     form.  Otherwise they must appear on printed covers that bracket
-     the whole aggregate.
-
-  8. TRANSLATION
-
-     Translation is considered a kind of modification, so you may
-     distribute translations of the Document under the terms of section
-     4.  Replacing Invariant Sections with translations requires special
-     permission from their copyright holders, but you may include
-     translations of some or all Invariant Sections in addition to the
-     original versions of these Invariant Sections.  You may include a
-     translation of this License, and all the license notices in the
-     Document, and any Warranty Disclaimers, provided that you also
-     include the original English version of this License and the
-     original versions of those notices and disclaimers.  In case of a
-     disagreement between the translation and the original version of
-     this License or a notice or disclaimer, the original version will
-     prevail.
-
-     If a section in the Document is Entitled "Acknowledgements",
-     "Dedications", or "History", the requirement (section 4) to
-     Preserve its Title (section 1) will typically require changing the
-     actual title.
-
-  9. TERMINATION
-
-     You may not copy, modify, sublicense, or distribute the Document
-     except as expressly provided under this License.  Any attempt
-     otherwise to copy, modify, sublicense, or distribute it is void,
-     and will automatically terminate your rights under this License.
-
-     However, if you cease all violation of this License, then your
-     license from a particular copyright holder is reinstated (a)
-     provisionally, unless and until the copyright holder explicitly
-     and finally terminates your license, and (b) permanently, if the
-     copyright holder fails to notify you of the violation by some
-     reasonable means prior to 60 days after the cessation.
-
-     Moreover, your license from a particular copyright holder is
-     reinstated permanently if the copyright holder notifies you of the
-     violation by some reasonable means, this is the first time you have
-     received notice of violation of this License (for any work) from
-     that copyright holder, and you cure the violation prior to 30 days
-     after your receipt of the notice.
-
-     Termination of your rights under this section does not terminate
-     the licenses of parties who have received copies or rights from
-     you under this License.  If your rights have been terminated and
-     not permanently reinstated, receipt of a copy of some or all of
-     the same material does not give you any rights to use it.
-
- 10. FUTURE REVISIONS OF THIS LICENSE
-
-     The Free Software Foundation may publish new, revised versions of
-     the GNU Free Documentation License from time to time.  Such new
-     versions will be similar in spirit to the present version, but may
-     differ in detail to address new problems or concerns.  See
-     `http://www.gnu.org/copyleft/'.
-
-     Each version of the License is given a distinguishing version
-     number.  If the Document specifies that a particular numbered
-     version of this License "or any later version" applies to it, you
-     have the option of following the terms and conditions either of
-     that specified version or of any later version that has been
-     published (not as a draft) by the Free Software Foundation.  If
-     the Document does not specify a version number of this License,
-     you may choose any version ever published (not as a draft) by the
-     Free Software Foundation.  If the Document specifies that a proxy
-     can decide which future versions of this License can be used, that
-     proxy's public statement of acceptance of a version permanently
-     authorizes you to choose that version for the Document.
-
- 11. RELICENSING
-
-     "Massive Multiauthor Collaboration Site" (or "MMC Site") means any
-     World Wide Web server that publishes copyrightable works and also
-     provides prominent facilities for anybody to edit those works.  A
-     public wiki that anybody can edit is an example of such a server.
-     A "Massive Multiauthor Collaboration" (or "MMC") contained in the
-     site means any set of copyrightable works thus published on the MMC
-     site.
-
-     "CC-BY-SA" means the Creative Commons Attribution-Share Alike 3.0
-     license published by Creative Commons Corporation, a not-for-profit
-     corporation with a principal place of business in San Francisco,
-     California, as well as future copyleft versions of that license
-     published by that same organization.
-
-     "Incorporate" means to publish or republish a Document, in whole or
-     in part, as part of another Document.
-
-     An MMC is "eligible for relicensing" if it is licensed under this
-     License, and if all works that were first published under this
-     License somewhere other than this MMC, and subsequently
-     incorporated in whole or in part into the MMC, (1) had no cover
-     texts or invariant sections, and (2) were thus incorporated prior
-     to November 1, 2008.
-
-     The operator of an MMC Site may republish an MMC contained in the
-     site under CC-BY-SA on the same site at any time before August 1,
-     2009, provided the MMC is eligible for relicensing.
-
-
-ADDENDUM: How to use this License for your documents
-====================================================
-
-To use this License in a document you have written, include a copy of
-the License in the document and put the following copyright and license
-notices just after the title page:
-
-       Copyright (C)  YEAR  YOUR NAME.
-       Permission is granted to copy, distribute and/or modify this document
-       under the terms of the GNU Free Documentation License, Version 1.3
-       or any later version published by the Free Software Foundation;
-       with no Invariant Sections, no Front-Cover Texts, and no Back-Cover
-       Texts.  A copy of the license is included in the section entitled ``GNU
-       Free Documentation License''.
-
-   If you have Invariant Sections, Front-Cover Texts and Back-Cover
-Texts, replace the "with...Texts." line with this:
-
-         with the Invariant Sections being LIST THEIR TITLES, with
-         the Front-Cover Texts being LIST, and with the Back-Cover Texts
-         being LIST.
-
-   If you have Invariant Sections without Cover Texts, or some other
-combination of the three, merge those two alternatives to suit the
-situation.
-
-   If your document contains nontrivial examples of program code, we
-recommend releasing these examples in parallel under your choice of
-free software license, such as the GNU General Public License, to
-permit their use in free software.
 

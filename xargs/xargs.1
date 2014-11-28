@@ -23,6 +23,7 @@ xargs \- build and execute command lines from standard input
 [\fB\-\-max\-chars\fR=\fImax-chars\fR]
 [\fB\-P \fImax-procs\fR]
 [\fB\-\-max\-procs\fR=\fImax-procs\fR]
+[\fB\-\-process\-slot\-var\fR=\fIname\fR]
 [\fB\-\-interactive\fR]
 [\fB\-\-verbose\fR]
 [\fB\-\-exit\fR]
@@ -89,24 +90,8 @@ will stop immediately without reading any further input.  An error
 message is issued on stderr when this happens.
 .SH OPTIONS
 .TP
-.PD 0
-.BI "\-\-arg\-file=" file
-.TP
-.PD 0
-.BI "\-a " file
-Read items from
-.I file
-instead of standard input.  If you use this option, stdin remains
-unchanged when commands are run.  Otherwise, stdin is redirected
-from
-.IR /dev/null .
-
-.TP
-.PD 0
-.B \-\-null
-.TP
 .PD
-.B \-0
+.B \-0, \-\-null
 Input items are terminated by a null character instead of by
 whitespace, and the quotes and backslash are not special (every
 character is taken literally).  Disables the end of file string, which
@@ -115,19 +100,19 @@ contain white space, quote marks, or backslashes.  The GNU find
 \-print0 option produces input suitable for this mode.
 
 .TP
-.PD 0
-.BI "\-\-delimiter=" delim
+.PD
+.BI "\-a " file ", \-\-arg\-file=" file
+Read items from
+.I file
+instead of standard input.  If you use this option, stdin remains
+unchanged when commands are run.  Otherwise, stdin is redirected
+from
+.IR /dev/null .
+
 .TP
 .PD
-.BI \-d " delim"
-Input items are terminated by the specified character.  Quotes and
-backslash are not special; every character in the input is taken
-literally.  Disables the end-of-file string, which is treated like any
-other argument.  This can be used when the input consists of simply
-newline-separated items, although it is almost always better to design
-your program to use
-.B \-\-null
-where this is possible.  The specified
+.BI "\-\-delimiter=" delim ", \-d" " delim"
+Input items are terminated by the specified character.  The specified
 delimiter may be a single character, a C-style character escape such
 as
 .BR \en ,
@@ -135,6 +120,15 @@ or an octal or hexadecimal escape code.  Octal and hexadecimal
 escape codes are understood as for the
 .B printf
 command.   Multibyte characters are not supported.
+When processing the input, quotes and backslash are not special; every
+character in the input is taken literally.  The
+.B \-d
+option disables any end-of-file string, which is treated like any
+other argument.  You can use this option when the input consists of
+simply newline-separated items, although it is almost always better to
+design your program to use
+.B \-\-null
+where this is possible.
 
 .TP
 .BI \-E " eof-str"
@@ -146,11 +140,8 @@ nor
 .B \-e
 is used, no end of file string is used.
 .TP
-.PD 0
-.BR "\-\-eof" [\fI=eof-str\fR]
-.TP
 .PD
-.BR \-e [ \fIeof-str\fR]
+.BR \-e "[\fIeof-str\fR], " "\-\-eof" [\fI=eof-str\fR]
 This option is a synonym for the
 .B \-E
 option.  Use
@@ -163,11 +154,6 @@ nor
 .B \-e
 is used, no end of file string is used.
 .TP
-.B "\-\-help"
-Print a summary of the options to
-.B xargs
-and exit.
-.TP
 .BI \-I " replace-str"
 Replace occurrences of \fIreplace-str\fR in the initial-arguments with
 names read from standard input.  Also, unquoted blanks do not
@@ -178,11 +164,8 @@ and
 .B \-L
 1.
 .TP
-.PD 0
-.BR "\-\-replace" [\fI=replace-str\fR]
-.TP
 .PD
-.BR  \-i "[\fIreplace-str\fR]"
+.BR \-i "[\fIreplace-str\fR], " "\-\-replace" [\fI=replace-str\fR]
 This option is a synonym for
 .BI \-I replace-str
 if
@@ -201,11 +184,8 @@ Trailing blanks cause an input line to be logically continued on the
 next input line.  Implies
 .BR \-x .
 .TP
-.PD 0
-.BR \-\-max-lines "[=\fImax-lines\fR]"
-.TP
 .PD
-.BR \-l "[\fImax-lines\fR]"
+.BR \-l "[\fImax-lines\fR], " \-\-max-lines "[=\fImax-lines\fR]"
 Synonym for the
 .B \-L
 option.  Unlike
@@ -220,11 +200,8 @@ option is deprecated since the POSIX standard specifies
 .B \-L
 instead.
 .TP
-.PD 0
-.BR "\-\-max\-args" =\fImax-args\fR
-.TP
 .PD
-.BI \-n " max-args"
+.BI \-n " max-args\fB, \fI" "\-\-max\-args" \fR=\fImax-args
 Use at most \fImax-args\fR arguments per command line.  Fewer than
 .I max-args
 arguments will be used if the size (see the
@@ -234,81 +211,8 @@ option) is exceeded, unless the
 option is given, in which case
 .B xargs will exit.
 .TP
-.PD 0
-.B \-\-interactive
-.TP
 .PD
-.B \-p
-Prompt the user about whether to run each command line and read a line
-from the terminal.  Only run the command line if the response starts
-with `y' or `Y'.  Implies
-.BR -t .
-.TP
-.PD 0
-.B \-\-no\-run\-if\-empty
-.TP
-.PD
-.B \-r
-If the standard input does not contain any nonblanks, do not run the
-command.  Normally, the command is run once even if there is no input.
-This option is a GNU extension.
-.TP
-.PD 0
-.BR \-\-max\-chars "=\fImax-chars\fR"
-.TP
-.PD
-.BI \-s " max-chars"
-Use at most \fImax-chars\fR characters per command line, including the
-command and initial-arguments and the terminating nulls at the ends of
-the argument strings.  The largest allowed value is system-dependent,
-and is calculated as the argument length limit for exec, less the size
-of your environment, less 2048 bytes of headroom.  If this value is
-more than 128KiB, 128Kib is used as the default value; otherwise, the
-default value is the maximum.  1KiB is 1024 bytes.
-.B xargs
-automatically adapts to tighter constraints.
-.TP
-.PD 0
-.B \-\-verbose
-.TP
-.PD
-.B \-t
-Print the command line on the standard error output before executing
-it.
-.TP
-.B "\-\-version"
-Print the version number of
-.B xargs
-and exit.
-.TP
-.B "\-\-show\\-limits"
-Display the limits on the command-line length which are imposed by the
-operating system,
-.BR xargs '
-choice of buffer size and the
-.B \-s
-option.  Pipe the input from
-.I /dev/null
-(and perhaps specify
-.BR --no-run-if-empty )
-if you don't want
-.B xargs
-to do anything.
-.TP
-.PD 0
-.B \-\-exit
-.TP
-.PD
-.B \-x
-Exit if the size (see the
-.B \-s
-option) is exceeded.
-.TP
-.PD 0
-.BR \-\-max\-procs "=\fImax-procs\fR"
-.TP
-.PD
-.BI \-P " max-procs"
+.BI \-P " max-procs\fR, \fI" \-\-max\-procs "\fR=\fImax-procs"
 Run up to
 .I max-procs
 processes at a time; the default is 1.  If
@@ -333,6 +237,85 @@ or a SIGUSR2 to decrease the number.  You cannot decrease it below 1.
 never terminates its commands; when asked to decrease, it merely
 waits for more than one existing command to terminate before starting
 another.
+
+.B Please note
+that it is up to the called processes to properly manage parallel
+access to shared resources.  For example, if more than one of them
+tries to print to stdout, the ouptut will be produced in an
+indeterminate order (and very likely mixed up) unless the processes
+collaborate in some way to prevent this.  Using some kind of locking
+scheme is one way to prevent such problems.  In general, using a
+locking scheme will help ensure correct output but reduce performance.
+If you don't want to tolerate the performance difference, simply
+arrange for each process to produce a separate output file (or
+otherwise use separate resources).
+.TP
+.PD
+.B \-p, \-\-interactive
+Prompt the user about whether to run each command line and read a line
+from the terminal.  Only run the command line if the response starts
+with `y' or `Y'.  Implies
+.BR -t .
+.TP
+.PD
+.BR \-\-process\-slot\-var "=\fIname\fR"
+Set the environment variable
+.I name
+to a unique value in each running child process.  Values are reused
+once child processes exit.  This can be used in a rudimentary load
+distribution scheme, for example.
+.TP
+.PD
+.B \-r, \-\-no\-run\-if\-empty
+If the standard input does not contain any nonblanks, do not run the
+command.  Normally, the command is run once even if there is no input.
+This option is a GNU extension.
+.TP
+.PD
+.BI -s " max-chars\fR, \fI" \-\-max\-chars "=\fImax-chars\fR"
+Use at most \fImax-chars\fR characters per command line, including the
+command and initial-arguments and the terminating nulls at the ends of
+the argument strings.  The largest allowed value is system-dependent,
+and is calculated as the argument length limit for exec, less the size
+of your environment, less 2048 bytes of headroom.  If this value is
+more than 128KiB, 128Kib is used as the default value; otherwise, the
+default value is the maximum.  1KiB is 1024 bytes.
+.B xargs
+automatically adapts to tighter constraints.
+.TP
+.B "\-\-show\\-limits"
+Display the limits on the command-line length which are imposed by the
+operating system,
+.BR xargs '
+choice of buffer size and the
+.B \-s
+option.  Pipe the input from
+.I /dev/null
+(and perhaps specify
+.BR --no-run-if-empty )
+if you don't want
+.B xargs
+to do anything.
+.TP
+.B \-t, \-\-verbose
+Print the command line on the standard error output before executing
+it.
+.TP
+.PD
+.B \-x, \-\-exit
+Exit if the size (see the
+.B \-s
+option) is exceeded.
+.TP
+.B "\-\-help"
+Print a summary of the options to
+.B xargs
+and exit.
+.TP
+.B "\-\-version"
+Print the version number of
+.B xargs
+and exit.
 .SH "EXAMPLES"
 .nf
 .B find /tmp \-name core \-type f \-print | xargs /bin/rm \-f
@@ -434,9 +417,19 @@ current system.
 
 .SH "SEE ALSO"
 \fBfind\fP(1), \fBlocate\fP(1), \fBlocatedb\fP(5), \fBupdatedb\fP(1),
-\fBfork\fP(2), \fBexecvp\fP(3), 
+\fBfork\fP(2), \fBexecvp\fP(3),
 \fBkill\fP(1), \fBsignal\fP(7),
-\fBFinding Files\fP (on-line in Info, or printed)
+
+The  full documentation for
+.B xargs
+is maintained as a Texinfo manual.  If the
+.B info
+and
+.B xargs
+programs are properly installed at your site, the command
+.B info xargs
+should give you access to the complete manual.
+
 .SH "BUGS"
 The
 .B \-L

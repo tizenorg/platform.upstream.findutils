@@ -2,7 +2,7 @@
 /* regextype.c -- Decode the name of a regular expression syntax into am
                   option name.
 
-   Copyright 2005, 2010 Free Software Foundation, Inc.
+   Copyright 2005, 2010, 2011 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,18 +19,21 @@
 */
 /* Written by James Youngman, <jay@gnu.org>. */
 
-# include <config.h>
+/* config.h must be included first. */
+#include <config.h>
 
+/* system headers. */
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
 
-#include "regextype.h"
-#include "regex.h"
-#include "quote.h"
-#include "xalloc.h"
+/* gnulib headers. */
 #include "error.h"
+#include "gettext.h"
+#include "quote.h"
+#include "regex.h"
+#include "regextype.h"
+#include "xalloc.h"
 
 
 #if ENABLE_NLS
@@ -49,9 +52,9 @@
 
 struct tagRegexTypeMap
 {
-  char *name;
+  const char *name;
   int  context;
-  int   option_val;
+  int  option_val;
 };
 
 struct tagRegexTypeMap regex_map[] =

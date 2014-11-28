@@ -1,6 +1,6 @@
 /* find -- search for files in a directory hierarchy
    Copyright (C) 1990, 1991, 1992, 1993, 1994, 2000, 2003, 2004, 2005,
-                 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -24,37 +24,55 @@
    Improvements have been made by James Youngman <jay@gnu.org>.
 */
 
-
+/* config.h must be included first. */
 #include <config.h>
-#include "defs.h"
 
-#define USE_SAFE_CHDIR 1
-#undef  STAT_MOUNTPOINTS
-
-
-#include <errno.h>
+/* system headers. */
 #include <assert.h>
-
-#include <sys/stat.h>
+#include <errno.h>
 #include <fcntl.h>
+#include <locale.h>
+#include <sys/stat.h>
 
-#include "fcntl--.h"
-#include "xalloc.h"
-#include "human.h"
+/* gnulib headers. */
 #include "canonicalize.h"
-
 #include "closein.h"
-#include "savedirinfo.h"
-#include "buildcmd.h"
+#include "dirent-safer.h"
 #include "dirname.h"
-#include "xgetcwd.h"
 #include "error.h"
-#include "fdleak.h"
+#include "fcntl--.h"
+#include "gettext.h"
+#include "human.h"
 #include "progname.h"
 #include "save-cwd.h"
+#include "xalloc.h"
+#include "xgetcwd.h"
 
-#ifdef HAVE_LOCALE_H
-#include <locale.h>
+
+/* find headers. */
+#include "buildcmd.h"
+#include "defs.h"
+#include "fdleak.h"
+
+#undef  STAT_MOUNTPOINTS
+
+#ifdef CLOSEDIR_VOID
+/* Fake a return value. */
+# define CLOSEDIR(d) (closedir (d), 0)
+#else
+# define CLOSEDIR(d) closedir (d)
+#endif
+
+enum
+{
+  NOT_AN_INODE_NUMBER = 0
+};
+
+#ifdef D_INO_IN_DIRENT
+# define D_INO(dp) (dp)->d_ino
+#else
+/* Some systems don't have inodes, so fake them to avoid lots of ifdefs.  */
+# define D_INO(dp) NOT_AN_INODE_NUMBER
 #endif
 
 #if ENABLE_NLS
@@ -77,8 +95,8 @@
 static void init_mounted_dev_list (int mandatory);
 #endif
 
-static void process_top_path (char *pathname, mode_t mode);
-static int process_path (char *pathname, char *name, bool leaf, char *parent, mode_t type);
+static void process_top_path (char *pathname, mode_t mode, ino_t inum);
+static int process_path (char *pathname, char *name, bool leaf, char *parent, mode_t type, ino_t inum);
 static void process_dir (char *pathname, char *name, int pathlen, const struct stat *statp, char *parent);
 
 
@@ -110,6 +128,43 @@ enum WdSanityCheckFatality
     RETRY_IF_SANITY_CHECK_FAILS,
     NON_FATAL_IF_SANITY_CHECK_FAILS
   };
+
+#if defined HAVE_STRUCT_DIRENT_D_TYPE
+/* Convert the value of struct dirent.d_type into a value for
+ * struct stat.st_mode (at least the file type bits), or zero
+ * if the type is DT_UNKNOWN or is a value we don't know about.
+ */
+static mode_t
+type_to_mode (unsigned type)
+{
+  switch (type)
+    {
+#ifdef DT_FIFO
+    case DT_FIFO: return S_IFIFO;
+#endif
+#ifdef DT_CHR
+    case DT_CHR:  return S_IFCHR;
+#endif
+#ifdef DT_DIR
+    case DT_DIR:  return S_IFDIR;
+#endif
+#ifdef DT_BLK
+    case DT_BLK:  return S_IFBLK;
+#endif
+#ifdef DT_REG
+    case DT_REG:  return S_IFREG;
+#endif
+#ifdef DT_LNK
+    case DT_LNK:  return S_IFLNK;
+#endif
+#ifdef DT_SOCK
+    case DT_SOCK: return S_IFSOCK;
+#endif
+    default:
+      return 0;			/* Unknown. */
+    }
+}
+#endif
 
 
 int
@@ -145,7 +200,7 @@ main (int argc, char **argv)
   if (NULL == state.shared_files)
     {
       error (EXIT_FAILURE, errno,
-	     _("Failed initialise shared-file hash table"));
+	     _("Failed to initialize shared-file hash table"));
     }
 
   /* Set the option defaults before we do the locale
@@ -159,7 +214,10 @@ main (int argc, char **argv)
 #endif
   bindtextdomain (PACKAGE, LOCALEDIR);
   textdomain (PACKAGE);
-  atexit (close_stdin);
+  if (atexit (close_stdin))
+    {
+      error (EXIT_FAILURE, errno, _("The atexit library function failed"));
+    }
 
   /* Check for -P, -H or -L options. */
   end_of_leading_options = process_leading_options (argc, argv);
@@ -171,7 +229,7 @@ main (int argc, char **argv)
   fprintf (stderr, "cur_day_start = %s", ctime (&options.cur_day_start));
 #endif /* DEBUG */
 
-  /* state.cwd_dir_fd has to be initialised before we call build_expression_tree ()
+  /* state.cwd_dir_fd has to be initialized before we call build_expression_tree ()
    * because command-line parsing may lead us to stat some files.
    */
   state.cwd_dir_fd = AT_FDCWD;
@@ -207,7 +265,7 @@ main (int argc, char **argv)
   /* If no paths are given, default to ".".  */
   for (i = end_of_leading_options; i < argc && !looks_like_expression (argv[i], true); i++)
     {
-      process_top_path (argv[i], 0);
+      process_top_path (argv[i], 0, starting_stat_buf.st_ino);
     }
 
   /* If there were no path arguments, default to ".". */
@@ -220,7 +278,7 @@ main (int argc, char **argv)
        * "find -printf %H" (note, not "find . -printf %H").
        */
       char defaultpath[2] = ".";
-      process_top_path (defaultpath, 0);
+      process_top_path (defaultpath, 0, starting_stat_buf.st_ino);
     }
 
   /* If "-exec ... {} +" has been used, there may be some
@@ -478,6 +536,7 @@ wd_sanity_check (const char *thing_to_stat,
 #ifdef STAT_MOUNTPOINTS
 	  isfatal = dirchange_is_fatal (specific_what,isfatal,silent,newinfo);
 #else
+	  (void) silent;
 	  isfatal = RETRY_IF_SANITY_CHECK_FAILS;
 #endif
 	}
@@ -779,7 +838,6 @@ safely_chdir_lstat (const char *dest,
   return rv;
 }
 
-#if defined O_NOFOLLOW
 /* Safely change working directory to the specified subdirectory.  If
  * we are not allowed to follow symbolic links, we use open() with
  * O_NOFOLLOW, followed by fchdir().  This ensures that we don't
@@ -811,7 +869,7 @@ safely_chdir_nofollow (const char *dest,
       if (following_links ())
 	extraflags = 0;
       else
-	extraflags = O_NOFOLLOW;
+	extraflags = O_NOFOLLOW; /* ... which may still be 0. */
       break;
     }
 
@@ -863,7 +921,6 @@ safely_chdir_nofollow (const char *dest,
 	}
     }
 }
-#endif
 
 static enum SafeChdirStatus
 safely_chdir (const char *dest,
@@ -881,9 +938,8 @@ safely_chdir (const char *dest,
    */
   complete_pending_execdirs ();
 
-#if !defined(O_NOFOLLOW)
-  options.open_nofollow_available = false;
-#endif
+  /* gnulib defines O_NOFOLLOW to 0 if the OS doesn't have it. */
+  options.open_nofollow_available = !!O_NOFOLLOW;
   if (options.open_nofollow_available)
     {
       result = safely_chdir_nofollow (dest, direction, statbuf_dest,
@@ -927,10 +983,12 @@ chdir_back (void)
 static void
 at_top (char *pathname,
 	mode_t mode,
+	ino_t inum,
 	struct stat *pstat,
 	void (*action)(char *pathname,
 		       char *basename,
 		       int mode,
+		       ino_t inum,
 		       struct stat *pstat))
 {
   int dirchange;
@@ -989,7 +1047,7 @@ at_top (char *pathname,
   free (parent_dir);
   parent_dir = NULL;
 
-  action (pathname, base, mode, pstat);
+  action (pathname, base, mode, inum, pstat);
 
   if (dirchange)
     {
@@ -1001,11 +1059,12 @@ at_top (char *pathname,
 static void do_process_top_dir (char *pathname,
 				char *base,
 				int mode,
+				ino_t inum,
 				struct stat *pstat)
 {
   (void) pstat;
 
-  process_path (pathname, base, false, ".", mode);
+  process_path (pathname, base, false, ".", mode, inum);
   complete_pending_execdirs ();
 }
 
@@ -1013,10 +1072,11 @@ static void
 do_process_predicate (char *pathname,
 		      char *base,
 		      int mode,
+		      ino_t inum,
 		      struct stat *pstat)
 {
   (void) mode;
-
+  (void) inum;
   state.rel_pathname = base;	/* cwd_dir_fd was already set by safely_chdir */
   apply_predicate (pathname, pstat, get_eval_tree ());
 }
@@ -1035,9 +1095,9 @@ do_process_predicate (char *pathname,
    and move to that.
 */
 static void
-process_top_path (char *pathname, mode_t mode)
+process_top_path (char *pathname, mode_t mode, ino_t inum)
 {
-  at_top (pathname, mode, NULL, do_process_top_dir);
+  at_top (pathname, mode, inum, NULL, do_process_top_dir);
 }
 
 
@@ -1122,7 +1182,7 @@ issue_loop_warning (const char *name, const char *pathname, int level)
 
 static int
 process_path (char *pathname, char *name, bool leaf, char *parent,
-	      mode_t mode)
+	      mode_t mode, ino_t inum)
 {
   struct stat stat_buf;
   static dev_t root_dev;	/* Device ID of current argument pathname. */
@@ -1132,6 +1192,13 @@ process_path (char *pathname, char *name, bool leaf, char *parent,
   eval_tree = get_eval_tree ();
   /* Assume it is a non-directory initially. */
   stat_buf.st_mode = 0;
+
+  /* The caller usually knows the inode number, either from readdir or
+   * a *stat call.  We use that value (the caller passes 0 to indicate
+   * ignorance of the inode number).
+   */
+  stat_buf.st_ino = inum;
+
   state.rel_pathname = name;
   state.type = 0;
   state.have_stat = false;
@@ -1212,11 +1279,13 @@ process_path (char *pathname, char *name, bool leaf, char *parent,
 
       if (0 == dir_curr)
 	{
-	  at_top (pathname, mode, &stat_buf, do_process_predicate);
+	  at_top (pathname, mode, stat_buf.st_ino, &stat_buf,
+		  do_process_predicate);
 	}
       else
 	{
-	  do_process_predicate (pathname, name, mode, &stat_buf);
+	  do_process_predicate (pathname, name, mode, stat_buf.st_ino,
+				&stat_buf);
 	}
     }
 
@@ -1242,10 +1311,9 @@ process_dir (char *pathname, char *name, int pathlen, const struct stat *statp, 
 {
   int subdirs_left;		/* Number of unexamined subdirs in PATHNAME. */
   bool subdirs_unreliable;	/* if true, cannot use dir link count as subdir limif (if false, it may STILL be unreliable) */
-  unsigned int idx;		/* Which entry are we on? */
   struct stat stat_buf;
   size_t dircount = 0u;
-  struct savedir_dirinfo *dirinfo;
+  DIR *dirp;
 
   if (statp->st_nlink < 2)
     {
@@ -1259,10 +1327,9 @@ process_dir (char *pathname, char *name, int pathlen, const struct stat *statp, 
     }
 
   errno = 0;
-  dirinfo = xsavedir (name, 0);
+  dirp = opendir_safer (name);
 
-
-  if (dirinfo == NULL)
+  if (dirp == NULL)
     {
       assert (errno != 0);
       error (0, errno, "%s", safely_quote_err_filename (0, pathname));
@@ -1270,7 +1337,6 @@ process_dir (char *pathname, char *name, int pathlen, const struct stat *statp, 
     }
   else
     {
-      register char *namep;	/* Current point in `name_space'. */
       char *cur_path;		/* Full path of each file to process. */
       char *cur_name;		/* Base name of each file to process. */
       unsigned cur_path_size;	/* Bytes allocated for `cur_path'. */
@@ -1347,14 +1413,42 @@ process_dir (char *pathname, char *name, int pathlen, const struct stat *statp, 
 	    }
 	}
 
-      for (idx=0; idx < dirinfo->size; ++idx)
+      while (1)
 	{
-	  /* savedirinfo() may return dirinfo=NULL if extended information
-	   * is not available.
-	   */
-	  mode_t mode = (dirinfo->entries[idx].flags & SavedirHaveFileType) ?
-	    dirinfo->entries[idx].type_info : 0;
-	  namep = dirinfo->entries[idx].name;
+	  const char *namep;
+	  mode_t mode = 0;
+	  const struct dirent *dp;
+
+	  /* We reset errno here to distinguish between end-of-directory and an error */
+	  errno = 0;
+	  dp = readdir (dirp);
+	  if (NULL == dp)
+	    {
+	      if (errno)
+		{
+		  /* an error occurred, but we are not yet at the end
+		     of the directory stream. */
+		  error (0, errno, "%s", safely_quote_err_filename (0, pathname));
+		  continue;
+		}
+	      else
+		{
+		  break;	/* End of the directory stream. */
+		}
+	    }
+	  else
+	    {
+	      namep = dp->d_name;
+	      /* Skip "", ".", and "..".  "" is returned by at least one buggy
+		 implementation: Solaris 2.4 readdir on NFS file systems.  */
+	      if (!namep[0] || (namep[0] == '.' && (namep[1] == '.' || namep[1] == 0)))
+		continue;
+	    }
+
+#if defined HAVE_STRUCT_DIRENT_D_TYPE
+	  if (dp->d_type != DT_UNKNOWN)
+	    mode = type_to_mode (dp->d_type);
+#endif
 
 	  /* Append this directory entry's name to the path being searched. */
 	  file_len = pathname_len + strlen (namep);
@@ -1405,8 +1499,8 @@ process_dir (char *pathname, char *name, int pathlen, const struct stat *statp, 
 	      {
 		int count;
 		count = process_path (cur_path, cur_name,
-					    subdirs_left == 0, pathname,
-					    mode);
+				      subdirs_left == 0, pathname,
+				      mode, D_INO(dp));
 		subdirs_left -= count;
 		dircount += count;
 	      }
@@ -1415,7 +1509,8 @@ process_dir (char *pathname, char *name, int pathlen, const struct stat *statp, 
 	    {
 	      /* There might be weird (e.g., CD-ROM or MS-DOS) file systems
 		 mounted, which don't have Unix-like directory link counts. */
-	      process_path (cur_path, cur_name, false, pathname, mode);
+	      process_path (cur_path, cur_name, false, pathname, mode,
+			    D_INO(dp));
 	    }
 
 	  state.curdepth--;
@@ -1432,7 +1527,6 @@ process_dir (char *pathname, char *name, int pathlen, const struct stat *statp, 
       if (strcmp (name, "."))
 	{
 	  enum SafeChdirStatus status;
-	  struct dir_id did;
 
 	  /* We could go back and do the next command-line arg
 	     instead, maybe using longjmp.  */
@@ -1468,21 +1562,10 @@ process_dir (char *pathname, char *name, int pathlen, const struct stat *statp, 
 		     "%s", safely_quote_err_filename (0, pathname));
 	      return;
 	    }
-
-	  if (dir_curr > 0)
-	    {
-	      did.dev = dir_ids[dir_curr-1].dev;
-	      did.ino = dir_ids[dir_curr-1].ino;
-	    }
-	  else
-	    {
-	      did.dev = starting_stat_buf.st_dev;
-	      did.ino = starting_stat_buf.st_ino;
-	    }
 	}
 
       free (cur_path);
-      free_dirinfo (dirinfo);
+      CLOSEDIR (dirp);
     }
 
   if (subdirs_unreliable)

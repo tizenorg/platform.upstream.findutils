@@ -1,6 +1,6 @@
 /* Print a string, appropriately quoted.
 
-   Copyright 1997, 1999, 2001, 2003, 2005, 2010 Free Software
+   Copyright 1997, 1999, 2001, 2003, 2005, 2010, 2011 Free Software
    Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
@@ -20,12 +20,11 @@
 #if !defined PRINTQUOTED_H
 # define PRINTQUOTED_H
 
-#include "quote.h"
-#include "quotearg.h"
-
-
 #include <stdbool.h>
 #include <stdio.h>
+
+#include "quote.h"
+#include "quotearg.h"
 
 
 size_t qmark_chars(char *buf, size_t len);

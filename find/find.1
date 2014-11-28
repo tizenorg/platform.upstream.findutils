@@ -3,20 +3,21 @@
 find \- search for files in a directory hierarchy
 .SH SYNOPSIS
 .B find
-[\-H] [\-L] [\-P] [\-D debugopts] [\-Olevel] [path...] [expression]
+[\-H] [\-L] [\-P] [\-D debugopts] [\-Olevel] [starting-point...] [expression]
 .SH DESCRIPTION
 This manual page
 documents the GNU version of
 .BR find .
 GNU
 .B find
-searches the directory tree rooted at each given file name by
+searches the directory tree rooted at each given starting-point by
 evaluating the given expression from left to right, according to the
 rules of precedence (see section OPERATORS), until the outcome is
 known (the left hand side is false for \fIand\fR operations, true for
 \fIor\fR), at which point
 .B find
-moves on to the next file name.
+moves on to the next file name.  If no starting-point is specified,
+`.' is assumed.
 .PP
 If you are using
 .B find
@@ -401,15 +402,15 @@ instead, one with the option and one without it).
 
 .IP "\-maxdepth \fIlevels\fR"
 Descend at most \fIlevels\fR (a non-negative integer) levels of
-directories below the command line arguments.
+directories below the starting-points.
 .B \-maxdepth 0
- means only apply the tests and actions to the command line arguments.
+ means only apply the tests and actions to the starting-points themselves.
 
 .IP "\-mindepth \fIlevels\fR"
 Do not apply any tests or actions at levels less than \fIlevels\fR (a
 non-negative integer).
 .B \-mindepth 1
-means process all files except the command line arguments.
+means process all files except the starting-points.
 
 .IP \-mount
 Don't descend directories on other filesystems.  An alternate name for
@@ -801,25 +802,9 @@ with the behaviour of
 .BR \-000 ).
 
 .IP "\-perm +\fImode\fR"
-Deprecated, old way of searching for files with any of the permission
-bits in \fImode\fR set.  You should use
-.B \-perm \fI/mode\fR
-instead. Trying to use the `+' syntax with symbolic modes will yield
-surprising results.  For example, `+u+x' is a valid symbolic mode
-(equivalent to +u,+x, i.e. 0111) and will therefore not be evaluated
-as
-.B \-perm +\fImode\fR
-but instead as the exact mode specifier
-.B \-perm \fImode\fR
-and so it matches files with exact permissions 0111 instead of files with any
-execute bit set.  If you found this paragraph confusing, you're not
-alone - just use
-.B \-perm /\fImode\fR.
-This form of the
-.B \-perm
-test is deprecated because the POSIX specification requires the
-interpretation of a leading `+' as being part of a symbolic mode, and
-so we switched to using `/' instead.
+This is no longer supported (and has been deprecated since 2005).  Use
+.B "\-perm /\fImode\fR"
+instead.
 
 .IP \-readable
 Matches files which are readable.  This takes into account access
@@ -850,7 +835,7 @@ File refers to the same inode as \fIname\fR.   When
 is in effect, this can include symbolic links.
 
 .IP "\-size \fIn\fR[cwbkMG]"
-File uses \fIn\fP units of space.  The following suffixes
+File uses \fIn\fP units of space, rounding up.  The following suffixes
 can be used:
 .RS
 .IP `b'
@@ -875,7 +860,10 @@ handle sparse files
 differently.  The `b' suffix always denotes 512-byte blocks and never
 1 Kilobyte blocks, which is different to the behaviour of
 .BR \-ls .
-
+The + and - prefixes signifiy greater than and less than, as usual,
+but bear in mind that the size is rounded up to the next unit (so a
+1-byte file is not matched by
+.BR "-size -1M" ).
 .IP \-true
 Always true.
 
@@ -1026,7 +1014,13 @@ command will be much less than the number of matched files.  The
 command line is built in much the same way that
 .B xargs
 builds its command lines.  Only one instance of `{}' is allowed within
-the command.  The command is executed in the starting directory.
+the command.  The command is executed in the starting directory.  If
+.B find
+encounters an error, this can sometimes cause an
+immediate exit, so some pending commands may not be run
+at all.  This variant of
+.B \-exec
+always returns true.
 
 .IP "\-execdir \fIcommand\fR ;"
 .IP "\-execdir \fIcommand\fR {} +"
@@ -1055,7 +1049,26 @@ appropriately-named file in a directory in which you will run
 .BR \-execdir .
 The same applies to having entries in
 .B $PATH
-which are empty or which are not absolute directory names.
+which are empty or which are not absolute directory names.  If
+.B find
+encounters an error, this can sometimes cause an
+immediate exit, so some pending commands may not be run
+at all. The result of the action depends on whether the
+.B +
+or the
+.B ;
+variant is being used;
+.B \-execdir
+.I command
+.B {} +
+always returns true, while
+.B \-execdir
+.I command
+.B {} ;
+returns true only if
+.I command
+returns 0.
+
 
 .IP "\-fls \fIfile\fR"
 True; like
@@ -1297,8 +1310,7 @@ function.
 File's last status change time in the format specified by \fIk\fR,
 which is the same as for %A.
 .IP %d
-File's depth in the directory tree; 0 means the file is a command line
-argument.
+File's depth in the directory tree; 0 means the file is a starting-point.
 .IP %D
 The device number on which the file exists (the st_dev field of struct
 stat), in decimal.
@@ -1316,7 +1328,7 @@ Leading directories of file's name (all but the last element).
 If the file name contains no slashes (since it is in the current
 directory) the %h specifier expands to ".".
 .IP %H
-Command line argument under which file was found.
+Starting-point under which file was found.
 .IP %i
 File's inode number (in decimal).
 .IP %k
@@ -1343,7 +1355,7 @@ Number of hard links to file.
 .IP %p
 File's name.
 .IP %P
-File's name with the name of the command line argument under which
+File's name with the name of the starting-point under which
 it was found removed.
 .IP %s
 File's size in bytes.
@@ -1374,6 +1386,8 @@ U=unknown type (shouldn't happen)
 File's type (like %y), plus follow symlinks: L=loop, N=nonexistent
 .IP %Z
 (SELinux only) file's security context.
+.IP "%{ %[ %("
+Reserved for future use.
 .PP
 A `%' character followed by any other character is discarded, but the
 other character is printed (don't rely on this, as further format
@@ -1417,7 +1431,8 @@ implies
 you cannot usefully use
 .B \-prune
 and
-.B \-delete together.
+.B \-delete
+together.
 
 .IP "\-quit"
 Exit immediately.  No child processes will be left running, but no more
@@ -1444,7 +1459,7 @@ example, changing the settings of your function keys on some
 terminals).  Unusual characters are handled differently by various
 actions, as described below.
 
-.IP "\-print0, \-fprint0\"
+.IP "\-print0, \-fprint0"
 Always print the exact filename, unchanged, even if the output is
 going to a terminal.
 
@@ -1790,6 +1805,27 @@ directives of
 .B \-printf
 and
 .BR \-fprintf .
+.SH BINARIES
+The findutils source distribution contains two different
+implementations of
+.BR find .
+The older implementation descends the file system recursively, while
+the newer one uses
+.BR fts (3).
+Both are normally installed.
+.P
+If the option
+.B \-\-without\-fts
+was passed to
+.BR configure ,
+the recursive implementation is installed as
+.B find
+and the fts-based implementation is installed as
+.BR ftsfind .
+Otherwise, the fts-based implementation is installed as
+.B find
+and the recursive implementation is installed as
+.BR oldfind .
 .SH "EXAMPLES"
 .nf
 .B find /tmp \-name core \-type f \-print | xargs /bin/rm \-f
@@ -2010,21 +2046,38 @@ description, but if the return value is non-zero, you should not rely
 on the correctness of the results of
 .BR find .
 
+When some error occurs,
+.B find
+may stop immeidately, without completing all the actions specified.
+For example, some starting points may not have been examined or some
+pending program invocations for
+.B \-exec ... {} +
+or
+.B \-execdir ... {} +
+may not have been performed.
+
+
 .SH "SEE ALSO"
 \fBlocate\fP(1), \fBlocatedb\fP(5), \fBupdatedb\fP(1), \fBxargs\fP(1),
 \fBchmod\fP(1), \fBfnmatch\fP(3), \fBregex\fP(7), \fBstat\fP(2),
 \fBlstat\fP(2), \fBls\fP(1), \fBprintf\fP(3), \fBstrftime\fP(3),
-\fBctime\fP(3), \fBFinding Files\fP (on-line in Info, or printed).
+\fBctime\fP(3)
+
+The  full documentation for
+.B find
+is maintained as a Texinfo manual.  If the
+.B info
+and
+.B find
+programs are properly installed at your site, the command
+.B info find
+should give you access to the complete manual.
+
 .SH "HISTORY"
 As of findutils-4.2.2, shell metacharacters (`*', `?' or `[]' for
 example) used in filename patterns will match a leading `.', because
 IEEE POSIX interpretation 126 requires this.
 .P
-The syntax
-\.B \-perm +MODE
-was deprecated in findutils-4.2.21, in favour of
-\.B \-perm
-.BR /MODE .
 As of findutils-4.3.3,
 .B \-perm /000
 now matches all files instead of none.
@@ -2072,6 +2125,17 @@ Feature	Added in	Also occurs in
 \-ipath	3.8
 \-iregex	3.8
 .TE
+.P
+The syntax
+\.B \-perm +MODE
+was removed in findutils-4.5.12, in favour of
+\.B \-perm
+.BR /MODE .
+The
+.B +MODE
+syntax had been deprecated since findutils-4.2.21
+which was released in 2005.
+.P
 .SH "NON-BUGS"
 .nf
 .B $ find . \-name *.c \-print

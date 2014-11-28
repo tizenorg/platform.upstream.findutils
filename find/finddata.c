@@ -1,6 +1,6 @@
 /* finddata.c -- global data for "find".
    Copyright (C) 1990, 1991, 1992, 1993, 1994, 2000, 2003, 2004, 2005,
-   2007, 2010 Free Software Foundation, Inc.
+   2007, 2010, 2011 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -16,10 +16,16 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/* config.h must be included first. */
 #include <config.h>
 
-#include "defs.h"
+/* system headers would go here, but we include none. */
+
+/* gnulib headers. */
 #include "save-cwd.h"
+
+/* find headers. */
+#include "defs.h"
 
 
 struct options options;

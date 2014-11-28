@@ -1,17 +1,16 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT([GNU findutils], 4.5.10, [bug-findutils@gnu.org])
+AC_INIT([GNU findutils], 4.5.14, [bug-findutils@gnu.org])
 AC_CONFIG_AUX_DIR(build-aux)
 AM_INIT_AUTOMAKE
 
 AC_CONFIG_SRCDIR([find/pred.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CANONICAL_HOST
-AC_CONFIG_MACRO_DIR(gnulib/m4)
+AC_CONFIG_MACRO_DIR(gl/m4)
 
 dnl Set of available languages.
 ALL_LINGUAS="be bg cs ca da de el eo es et fi fr ga gl hr hu id it ja ko lg lt ms nl pl pt pt_BR ro ru rw sk sl sr sv tr uk vi zh_CN zh_TW"
 
-AC_SUBST(INCLUDES)dnl
 AC_SUBST(AUXDIR,$ac_aux_dir)
 dnl check for --with-fts
 FIND_WITH_FTS
@@ -77,10 +76,9 @@ AC_PROG_CPP
 dnl for gnulib
 gl_EARLY
 
-AM_C_PROTOTYPES
-
 AC_PROG_INSTALL
-AC_PROG_RANLIB
+AC_CHECK_TOOLS([AR], [ar])
+AC_CHECK_TOOLS([RANLIB], [ranlib], [:])
 dnl AC_PROG_LIBTOOL
 AC_PROG_MAKE_SET
 AC_SYS_LARGEFILE
@@ -89,11 +87,39 @@ AC_SYS_LARGEFILE
 gl_INIT
 
 dnl Enable various GCC warnings.
-gl_WARN_ADD([-Wdeclaration-after-statement])
-gl_WARN_ADD([-Wall])
+gl_MANYWARN_ALL_GCC([warnings])
+# Set up the list of the pointless, undesired warnings.
+nw=
+nw="$nw -Wsystem-headers"       # Don't let system headers trigger warnings
+nw="$nw -Wundef"                # All compiler preprocessors support #if UNDEF
+nw="$nw -Wtraditional"          # All compilers nowadays support ANSI C
+nw="$nw -Wconversion"           # These warnings usually don't point to mistakes.
+nw="$nw -Wsign-conversion"      # Likewise.
+nw="$nw -Wc++-compat"           # malloc returns void* and a cast would be ugly.
+# Warnings we might enable in the future, but not yet (because they generate a
+# lot of noise).
+marginal=""
+marginal="$marginal -Wtraditional-conversion"
+marginal="$marginal -Wpadded"
+marginal="$marginal -Wformat-nonliteral"
+marginal="$marginal -Wunreachable-code"
+marginal="$marginal -Wunused-parameter"
+excluded_warnings="$nw $marginal"
 
+# Enable all GCC warnings not in this list.
+gl_MANYWARN_COMPLEMENT([warnings], [$warnings], [$excluded_warnings])
 
-dnl Older versions of gnulib/m4/nls.m4 provide AM_MKINSTALLDIRS.
+AC_ARG_ENABLE(compiler-warnings,
+  AS_HELP_STRING(--enable-compiler-warnings,Enable many compiler warnings),
+  [
+    for w in $warnings
+    do
+      gl_WARN_ADD([$w])
+    done
+  ]
+  )
+
+dnl Older versions of gl/m4/nls.m4 provide AM_MKINSTALLDIRS.
 dnl The current version of gnulib does not, but the version of
 dnl po/Makefile.in.in that comes with gettext-0.14.6 expects
 dnl that @MKINSTALLDIRS@ will be expanded.
@@ -119,15 +145,11 @@ AC_SUBST([FINDLIBS])
 
 dnl Checks for header files.
 AC_HEADER_STDC
-dnl Assume unistd.h is present - coreutils does too.
-AC_CHECK_HEADERS(fcntl.h string.h limits.h errno.h stdlib.h stddef.h)
-AC_CHECK_HEADERS(unistd.h sys/types.h inttypes.h fcntl.h locale.h stdint.h)
 AC_CHECK_HEADERS(sys/param.h mntent.h sys/mnttab.h sys/mntio.h sys/mkdev.h)
-dnl find.c needs sys/utsname.h because it calls uname(2).
-AC_CHECK_HEADERS(sys/utsname.h)
 dnl fdleak.c needs sys/resource.h because it calls getrlimit(2).
 AC_CHECK_HEADERS(sys/resource.h)
 AC_HEADER_MAJOR
+dnl TODO: it's possible gnulib eliminates the need for AC_HEADER_DIRENT.
 AC_HEADER_DIRENT
 AC_HEADER_STAT
 AC_HEADER_SYS_WAIT
@@ -209,6 +231,12 @@ dnl Hence they need to know if they are being compiled into findutils or not.
 AC_DEFINE([FINDUTILS], 1, [Define if we are compiling GNU findutils])
 AC_DEFINE([ALREADY_INCLUDED_CONFIG_H], 1, [Define so that source code can verify that config.h was already included])
 
+dnl Test support.
+AM_PATH_PYTHON(,, [:])
+AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != :])
+AC_CHECK_PROGS([FAKETIME],[faketime],[:])
+AM_CONDITIONAL([HAVE_FAKETIME], [test "$FAKETIME" != :])
+
 # This is necessary so that .o files in LIBOBJS are also built via
 # the ANSI2KNR-filtering rules.
 #LIBOBJS=`echo $LIBOBJS|sed 's/\.o /\$U.o /g;s/\.o$/\$U.o/'`
@@ -222,8 +250,8 @@ build-aux/Makefile
 doc/Makefile
 find/Makefile
 find/testsuite/Makefile
-gnulib/Makefile
-gnulib/lib/Makefile
+gl/Makefile
+gl/lib/Makefile
 lib/Makefile
 locate/Makefile
 locate/testsuite/Makefile

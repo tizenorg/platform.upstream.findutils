@@ -1,6 +1,6 @@
 /* fstype.c -- determine type of file systems that files are on
    Copyright (C) 1990, 1991, 1992, 1993, 1994, 2000,
-                 2004, 2010 Free Software Foundation, Inc.
+                 2004, 2010, 2011 Free Software Foundation, Inc.
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation, either version 3 of the License, or
@@ -22,47 +22,42 @@
  * of manual hacking of configure.in).
  */
 
-
+/* config.h must be included first. */
 #include <config.h>
-#include <errno.h>
-#include <stdbool.h>
 
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>
+/* system headers. */
+#include <errno.h>
+#include <fcntl.h>
+#if HAVE_MNTENT_H
+# include <mntent.h>
+#endif
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#ifdef HAVE_SYS_MKDEV_H
+# include <sys/mkdev.h>
+#endif
+#ifdef HAVE_SYS_MNTIO_H
+# include <sys/mntio.h>
+#endif
+#if HAVE_SYS_MNTTAB_H
+# include <sys/mnttab.h>
 #endif
 #include <sys/stat.h>
-
-/* The presence of unistd.h is assumed by gnulib these days, so we
- * might as well assume it too.
- */
+#include <sys/types.h>
 #include <unistd.h>
 
-#include <fcntl.h>
-#ifdef HAVE_SYS_MNTIO_H
-#include <sys/mntio.h>
-#endif
-#ifdef HAVE_SYS_MKDEV_H
-#include <sys/mkdev.h>
-#endif
-
-#ifdef STDC_HEADERS
-#include <stdlib.h>
-#else
-extern int errno;
-#endif
-
-#include "defs.h"
-#include "../gnulib/lib/dirname.h"
+/* gnulib headers. */
+#include "dirname.h"
 #include "xalloc.h"
-
-/* Need declaration of function `xstrtoumax' */
-#include "../gnulib/lib/xstrtol.h"
-
-#include "extendbuf.h"
+#include "xstrtol.h"
 #include "mountlist.h"
 #include "error.h"
+#include "gettext.h"
 
-
+/* find headers. */
+#include "defs.h"
+#include "extendbuf.h"
 
 #if ENABLE_NLS
 # include <libintl.h>
@@ -78,19 +73,6 @@ extern int errno;
 #endif
 
 static char *file_system_type_uncached (const struct stat *statp, const char *path);
-
-
-/* Get MNTTYPE_IGNORE if it is available. */
-#if HAVE_MNTENT_H
-# include <mntent.h>
-#endif
-#if HAVE_SYS_MNTTAB_H
-# include <stdio.h>
-# include <sys/mnttab.h>
-#endif
-
-
-
 
 
 static void
@@ -215,7 +197,7 @@ must_read_fs_list (bool need_fs_type)
 static char *
 file_system_type_uncached (const struct stat *statp, const char *path)
 {
-  struct mount_entry *entries, *entry;
+  struct mount_entry *entries, *entry, *best;
   char *type;
 
   (void) path;
@@ -228,6 +210,7 @@ file_system_type_uncached (const struct stat *statp, const char *path)
     }
 #endif
 
+  best = NULL;
   entries = must_read_fs_list (true);
   for (type=NULL, entry=entries; entry; entry=entry->me_next)
     {
@@ -235,12 +218,23 @@ file_system_type_uncached (const struct stat *statp, const char *path)
       if (!strcmp (entry->me_type, MNTTYPE_IGNORE))
 	continue;
 #endif
-      set_fstype_devno (entry);
-      if (entry->me_dev == statp->st_dev)
+      if (0 == set_fstype_devno (entry))
 	{
-	  type = xstrdup (entry->me_type);
-	  break;
+	  if (entry->me_dev == statp->st_dev)
+	    {
+	      best = entry;
+	      /* Don't exit the loop, because some systems (for
+		 example Linux-based systems in which /etc/mtab is a
+		 symlink to /proc/mounts) can have duplicate entries
+		 in the filesystem list.  This happens most frequently
+		 for /.
+	      */
+	    }
 	}
+    }
+  if (best)
+    {
+      type = xstrdup (best->me_type);
     }
   free_file_system_list (entries);
 
@@ -269,7 +263,6 @@ get_mounted_filesystems (void)
       if (!strcmp (entry->me_type, MNTTYPE_IGNORE))
 	continue;
 #endif
-      set_fstype_devno (entry);
 
       len = strlen (entry->me_mountdir) + 1;
       p = extendbuf (result, used+len, &alloc_size);
@@ -312,9 +305,11 @@ get_mounted_devices (size_t *n)
       if (p)
 	{
 	  result = p;
-	  set_fstype_devno (entry);
-	  result[used] = entry->me_dev;
-	  ++used;
+	  if (0 == set_fstype_devno (entry))
+	    {
+	      result[used] = entry->me_dev;
+	      ++used;
+	    }
 	}
       else
 	{

@@ -1,5 +1,6 @@
 /* bigram -- list bigrams for locate
-   Copyright (C) 1994, 2007, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 1994, 2007, 2009, 2010, 2011 Free Software Foundation,
+   Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -29,17 +30,43 @@
    Written by James A. Woods <jwoods@adobe.com>.
    Modified by David MacKenzie <djm@gnu.ai.mit.edu>.  */
 
+/* config.h must always be included first. */
 #include <config.h>
-#include <stdio.h>
 
+/* system headers. */
+#include <errno.h>
+#include <stdio.h>
+#include <locale.h>
 #include <string.h>
 #include <stdlib.h>
-
 #include <sys/types.h>
 
-#include <xalloc.h>
-#include "progname.h"
+/* gnulib headers. */
 #include "closeout.h"
+#include "gettext.h"
+#include "progname.h"
+#include "xalloc.h"
+#include "error.h"
+
+/* find headers would go here but we don't need any. */
+
+
+/* We use gettext because for example xmalloc may issue an error message. */
+#if ENABLE_NLS
+# include <libintl.h>
+# define _(Text) gettext (Text)
+#else
+# define _(Text) Text
+#define textdomain(Domain)
+#define bindtextdomain(Package, Directory)
+#endif
+#ifdef gettext_noop
+# define N_(String) gettext_noop(String)
+#else
+/* See locate.c for explanation as to why not use (String) */
+# define N_(String) String
+#endif
+
 
 /* Return the length of the longest common prefix of strings S1 and S2. */
 
@@ -66,8 +93,17 @@ main (int argc, char **argv)
   else
     set_program_name ("bigram");
 
+#ifdef HAVE_SETLOCALE
+  setlocale (LC_ALL, "");
+#endif
+  bindtextdomain (PACKAGE, LOCALEDIR);
+  textdomain (PACKAGE);
+
   (void) argc;
-  atexit (close_stdout);
+  if (atexit (close_stdout))
+    {
+      error (EXIT_FAILURE, errno, _("The atexit library function failed"));
+    }
 
   pathsize = oldpathsize = 1026; /* Increased as necessary by getline.  */
   path = xmalloc (pathsize);

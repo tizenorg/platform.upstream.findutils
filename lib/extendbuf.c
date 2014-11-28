@@ -1,6 +1,6 @@
 /* extendbuf.c -- manage a dynamically-allocated buffer
 
-   Copyright 2004, 2010 Free Software Foundation, Inc.
+   Copyright 2004, 2010, 2011 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -17,15 +17,18 @@
 */
 /* Written by James Yougnman <jay@gnu.org>. */
 
+/* config.h must be included first. */
 #include <config.h>
 
-
-#include <stddef.h>
-#include <stdlib.h>
+/* system headers. */
 #include <assert.h>
 #include <errno.h>
+#include <stdlib.h>
 
+/* gnulib headers. */
 #include "xalloc.h"
+
+/* find headers. */
 #include "extendbuf.h"
 
 
@@ -61,7 +64,7 @@ extendbuf (void* existing, size_t wanted, size_t *allocated)
 {
   int saved_errno;
   size_t newsize;
-  void *result; /* leave uninitialised to allow static code checkers to identify bugs */
+  void *result; /* leave uninitialized to allow static code checkers to identify bugs */
 
   saved_errno = errno;
 

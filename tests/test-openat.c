@@ -1,5 +1,5 @@
 /* Test that openat works.
-   Copyright (C) 2009-2011 Free Software Foundation, Inc.
+   Copyright (C) 2009-2014 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@ SIGNATURE_CHECK (openat, int, (int, char const *, int, ...));
 #include <stdio.h>
 #include <unistd.h>
 
+#include "progname.h"
 #include "macros.h"
 
 #define BASE "test-openat.t"
@@ -58,9 +59,24 @@ do_open (char const *name, int flags, ...)
 }
 
 int
-main (void)
+main (int argc _GL_UNUSED, char *argv[])
 {
   int result;
+
+  set_program_name (argv[0]);
+
+  /* Test behaviour for invalid file descriptors.  */
+  {
+    errno = 0;
+    ASSERT (openat (-1, "foo", O_RDONLY) == -1);
+    ASSERT (errno == EBADF);
+  }
+  {
+    close (99);
+    errno = 0;
+    ASSERT (openat (99, "foo", O_RDONLY) == -1);
+    ASSERT (errno == EBADF);
+  }
 
   /* Basic checks.  */
   result = test_open (do_open, false);

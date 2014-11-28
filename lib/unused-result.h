@@ -1,5 +1,5 @@
 /* unused-result.h -- macros for ensuring callers don't ignore return values
-   Copyright (C) 2010, Free Software Foundation, Inc.
+   Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -16,8 +16,8 @@
 */
 
 /* Taken from coreutils' fts_.h */
-#ifndef _UNUSED_RESULT_H
-# define _UNUSED_RESULT_H 1
+#ifndef INC_UNUSED_RESULT_H
+# define INC_UNUSED_RESULT_H 1
 
 # ifndef __GNUC_PREREQ
 #  if defined __GNUC__ && defined __GNUC_MINOR__

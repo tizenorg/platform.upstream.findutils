@@ -3,11 +3,24 @@
 locate \- list files in databases that match a pattern
 .SH SYNOPSIS
 .B locate
-[\-d path | \-\-database=path] [\-e | \-E | \-\-[non\-]existing] [\-i
-| \-\-ignore-case] [\-0 | \-\-null] [\-c | \-\-count] [\-w | \-\-wholename]
-|\-b | \-\-basename] [\-l N | \-\-limit=N] [\-S | \-\-statistics] [\-r
-| \-\-regex ] [\-\-max-database-age D] [\-P | \-H | \-\-nofollow] [\-L
-| \-\-follow] [\-\-version] [\-A | \-\-all] [\-p | \-\-print] [\-\-help] pattern...
+[\-d path | \-\-database=path]
+[\-e | \-E | \-\-[non\-]existing]
+[\-i | \-\-ignore-case]
+[\-0 | \-\-null]
+[\-c | \-\-count]
+[\-w | \-\-wholename]
+[\-b | \-\-basename]
+[\-l N | \-\-limit=N]
+[\-S | \-\-statistics]
+[\-r | \-\-regex ]
+[\-\-max-database-age D]
+[\-P | \-H | \-\-nofollow]
+[\-L | \-\-follow]
+[\-\-version]
+[\-A | \-\-all]
+[\-p | \-\-print]
+[\-\-help]
+pattern...
 .SH DESCRIPTION
 This manual page
 documents the GNU version of
@@ -172,7 +185,7 @@ Accepted but does nothing, for compatibility with BSD
 Print various statistics about each locate database and then exit
 without performing a search, unless non-option arguments are given.
 For compatibility with BSD, \-S is accepted as a synonym
-for \-\-statistics.  However, the ouptut of
+for \-\-statistics.  However, the output of
 .B locate \-S
 is different for the GNU and BSD implementations of
 .BR locate .
@@ -195,8 +208,19 @@ results that vary between different versions of
 
 .SH "SEE ALSO"
 \fBfind\fP(1), \fBlocatedb\fP(5), \fBupdatedb\fP(1), \fBxargs\fP(1),
-\fBglob\fP(3),
-\fBFinding Files\fP (on-line in Info, or printed)
+\fBglob\fP(3)
+
+The full documentation for
+.B locate
+is maintained as a Texinfo manual.  If the
+.B info
+and
+.B locate
+programs are properly installed at your site, the command
+.B info locate
+should give you access to the complete manual.
+
+
 .SH "HISTORY"
 The
 .B locate

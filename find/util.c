@@ -1,6 +1,6 @@
 /* util.c -- functions for initializing new tree elements, and other things.
-   Copyright (C) 1990, 91, 92, 93, 94, 2000, 2003, 2004, 2005,
-                 2008, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1992, 1993, 1994, 2000, 2003, 2004, 2005,
+   2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -16,30 +16,34 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/* config.h must always come first. */
 #include <config.h>
-#include "defs.h"
 
-#include <fcntl.h>
-#ifdef HAVE_SYS_UTSNAME_H
-#include <sys/utsname.h>
-#endif
-#include <sys/time.h>
-#include <sys/stat.h> /* for fstatat() */
-#include <ctype.h>
-#include <string.h>
-#include <limits.h>
-#include <errno.h>
+/* system headers. */
 #include <assert.h>
+#include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <limits.h>
+#include <string.h>
+#include <sys/stat.h> /* for fstatat() */
+#include <sys/time.h>
+#include <sys/utsname.h>
 
+/* gnulib headers. */
+#include "error.h"
+#include "fdleak.h"
+#include "gettext.h"
 #include "progname.h"
 #include "quotearg.h"
-#include "timespec.h"
-#include "error.h"
-#include "verify.h"
-#include "fdleak.h"
-#include "dircallback.h"
-#include "xalloc.h"
 #include "save-cwd.h"
+#include "timespec.h"
+#include "verify.h"
+#include "xalloc.h"
+
+/* find headers. */
+#include "defs.h"
+#include "dircallback.h"
 
 
 #if ENABLE_NLS
@@ -142,7 +146,7 @@ insert_primary_noarg (const struct parser_table *entry)
 static void
 show_valid_debug_options (FILE *fp, int full)
 {
-  int i;
+  size_t i;
   if (full)
     {
       fprintf (fp, "Valid arguments for -D:\n");
@@ -189,6 +193,10 @@ set_stat_placeholders (struct stat *p)
 #endif
 #if HAVE_STRUCT_STAT_ST_BIRTHTIMESPEC_TV_SEC
   p->st_birthtimespec.tv_sec = 0;
+#else
+  /* Avoid pointless compiler warning about unused parameters if none of these
+     macros are set to nonzero values. */
+  (void) p;
 #endif
 }
 

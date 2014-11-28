@@ -1,7 +1,5 @@
-This is
-/home/james/source/GNU/findutils/git/gnu/findutils/doc/find-maint.info,
-produced by makeinfo version 4.13 from
-/home/james/source/GNU/findutils/git/gnu/findutils/doc/find-maint.texi.
+This is ../../../findutils/doc/find-maint.info, produced by makeinfo
+version 4.13 from ../../../findutils/doc/find-maint.texi.
 
 INFO-DIR-SECTION GNU organization
 START-INFO-DIR-ENTRY
@@ -11,9 +9,9 @@ END-INFO-DIR-ENTRY
    This manual explains how GNU findutils is maintained, how changes
 should be made and tested, and what resources exist to help developers.
 
-   This is edition 4.5.10, for findutils version 4.5.10.
+   This is edition 4.5.14, for findutils version 4.5.14.
 
-   Copyright (C) 2007, 2008, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2008, 2010, 2011 Free Software Foundation, Inc.
 
    Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -31,9 +29,9 @@ Maintaining GNU Findutils
 This manual explains how GNU findutils is maintained, how changes should
 be made and tested, and what resources exist to help developers.
 
-   This is edition 4.5.10, for findutils version 4.5.10.
+   This is edition 4.5.14, for findutils version 4.5.14.
 
-   Copyright (C) 2007, 2008, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2008, 2010, 2011 Free Software Foundation, Inc.
 
    Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -225,13 +223,13 @@ circumstances.
 * Menu:
 
 * Make the Compiler Find the Bugs::
+* Factor Out Repeated Code::
 * The File System Is Being Modified::
 * Don't Trust the File System Contents::
 * Debugging is For Users Too::
-* Factor Out Repeated Code::
 
 
-File: find-maint.info,  Node: Make the Compiler Find the Bugs,  Next: The File System Is Being Modified,  Up: Coding Conventions
+File: find-maint.info,  Node: Make the Compiler Find the Bugs,  Next: Factor Out Repeated Code,  Up: Coding Conventions
 
 4.1 Make the Compiler Find the Bugs
 ===================================
@@ -324,7 +322,7 @@ code:
      *p = 0;
 
 
-File: find-maint.info,  Node: Factor Out Repeated Code,  Prev: Debugging is For Users Too,  Up: Coding Conventions
+File: find-maint.info,  Node: Factor Out Repeated Code,  Next: The File System Is Being Modified,  Prev: Make the Compiler Find the Bugs,  Up: Coding Conventions
 
 4.2 Factor Out Repeated Code
 ============================
@@ -369,7 +367,7 @@ view.  Nevertheless there are some areas which are only lightly-tested:
    Please exercise caution when working in those areas.
 
 
-File: find-maint.info,  Node: Debugging is For Users Too,  Next: Factor Out Repeated Code,  Prev: Don't Trust the File System Contents,  Up: Coding Conventions
+File: find-maint.info,  Node: Debugging is For Users Too,  Prev: Don't Trust the File System Contents,  Up: Coding Conventions
 
 4.3 Debugging is For Users Too
 ==============================
@@ -411,7 +409,7 @@ and the `chdir' in which a malicious person could rename the directory
 and substitute a symbolic link to some other directory.
 
 
-File: find-maint.info,  Node: The File System Is Being Modified,  Next: Don't Trust the File System Contents,  Prev: Make the Compiler Find the Bugs,  Up: Coding Conventions
+File: find-maint.info,  Node: The File System Is Being Modified,  Next: Don't Trust the File System Contents,  Prev: Factor Out Repeated Code,  Up: Coding Conventions
 
 4.5 The File System Is Being Modified
 =====================================
@@ -460,7 +458,7 @@ Valgrind
      Valgrind is a tool which dynamically verifies the memory accesses a
      program makes to ensure that they are valid (for example, that the
      behaviour of the program does not in any way depend on the
-     contents of uninitialised memory).
+     contents of uninitialized memory).
 
 DejaGnu
      DejaGnu is the test framework used to run the findutils test suite
@@ -859,7 +857,7 @@ available.    Here is an example alert:-
 
      When locate reads filenames from a LOCATE02 database (the default
      format), the buffer into which data is read is automatically extended
-     to accomodate the length of the filenames.
+     to accommodate the length of the filenames.
 
      This automatic buffer extension does not happen for old-format
      databases.  Instead a 1026-byte buffer is used.  When a longer
@@ -1660,25 +1658,25 @@ permit their use in free software.
 
 
 Tag Table:
-Node: Top988
-Node: Introduction2066
-Node: Maintaining GNU Programs2815
-Node: Design Issues3617
-Node: Coding Conventions7568
-Node: Make the Compiler Find the Bugs9535
-Node: Factor Out Repeated Code13092
-Node: Debugging is For Users Too15118
-Node: Don't Trust the File System Contents15849
-Node: The File System Is Being Modified17132
-Node: Tools18569
-Node: Using the GNU Portability Library19770
-Node: Documentation26951
-Node: Testing29669
-Node: Bugs30010
-Node: Distributions31754
-Node: Internationalisation32789
-Node: Security33258
-Node: Making Releases44621
-Node: GNU Free Documentation License46746
+Node: Top930
+Node: Introduction2014
+Node: Maintaining GNU Programs2763
+Node: Design Issues3565
+Node: Coding Conventions7516
+Node: Make the Compiler Find the Bugs9483
+Node: Factor Out Repeated Code13031
+Node: Debugging is For Users Too15104
+Node: Don't Trust the File System Contents15802
+Node: The File System Is Being Modified17085
+Node: Tools18515
+Node: Using the GNU Portability Library19716
+Node: Documentation26897
+Node: Testing29615
+Node: Bugs29956
+Node: Distributions31700
+Node: Internationalisation32735
+Node: Security33204
+Node: Making Releases44568
+Node: GNU Free Documentation License46693
 
 End Tag Table

@@ -1,6 +1,7 @@
 /* qmark.c -- quote 'dangerous' filenames
 
-   Copyright (C) 2005, 2007, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2009, 2010, 2011 Free Software Foundation,
+   Inc.
    Derived from courutils' ls.c:
    Copyright (C) 85, 88, 90, 91, 1995-2005 Free Software Foundation, Inc.
 
@@ -17,15 +18,18 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
+/* config.h must be included first. */
 #include <config.h>
 
-#include <stddef.h>
-#include <stdlib.h>
+/* system headers. */
 #include <ctype.h>
+#include <stdlib.h>
 #include <string.h>
 #include <wchar.h>
 
+/* gnulib headers would go here if any needed to be included. */
+
+/* find headers. */
 #include "printquoted.h"
 
 
@@ -51,20 +55,20 @@
    outside the range -1 <= c <= 255. One is tempted to write isupper(c)
    with c being of type `char', but this is wrong if c is an 8-bit
    character >= 128 which gets sign-extended to a negative value.
-   The macro ISUPPER protects against this as well."  */
+   The macro ISUPPER protects against this as well."
 
+   (Actually that rule of ISUPPER is now taken by to_uchar).
+*/
 
-
-
-/* ISPRINT is defined in <sys/euc.h> on at least Solaris2.6 systems.  */
-#undef ISPRINT
-#define ISPRINT(c) (IN_CTYPE_DOMAIN (c) && isprint (c))
-
-#if STDC_HEADERS || (!defined (isascii) && !HAVE_ISASCII)
+#if STDC_HEADERS
 # define IN_CTYPE_DOMAIN(c) 1
 #else
 # define IN_CTYPE_DOMAIN(c) isascii(c)
 #endif
+
+/* ISPRINT is defined in <sys/euc.h> on at least Solaris2.6 systems.  */
+#undef ISPRINT
+#define ISPRINT(c) (IN_CTYPE_DOMAIN (c) && isprint (c))
 
 
 

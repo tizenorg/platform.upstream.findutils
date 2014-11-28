@@ -1,5 +1,5 @@
 /* listfile.h -- display a long listing of a file
-   Copyright (C) 2007, 2008, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2008, 2010, 2011 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -22,6 +22,6 @@
 struct saved_cwd;
 
 int run_in_dirfd (int fd, int (*callback)(void*), void *usercontext);
-int run_in_dir (struct saved_cwd*, int (*callback)(void*), void *usercontext);
+int run_in_dir (const struct saved_cwd*, int (*callback)(void*), void *usercontext);
 
 #endif

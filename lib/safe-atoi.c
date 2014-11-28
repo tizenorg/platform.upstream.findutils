@@ -1,5 +1,5 @@
 /* safe-atoi.c -- checked string-to-int conversion.
-   Copyright (C) 2007, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2010, 2011 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -14,16 +14,21 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
+/* config.h must be included first. */
 #include <config.h>
+
+/* system headers. */
+#include <errno.h>
 #include <limits.h>
 #include <stdlib.h>
-#include <errno.h>
 
-#include "safe-atoi.h"
-#include "quotearg.h"
+/* gnulib headers. */
 #include "error.h"
+#include "gettext.h"
+#include "quotearg.h"
 
+/* find headers. */
+#include "safe-atoi.h"
 
 #if ENABLE_NLS
 # include <libintl.h>

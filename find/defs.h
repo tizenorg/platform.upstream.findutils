@@ -1,6 +1,6 @@
 /* defs.h -- data types and declarations.
    Copyright (C) 1990, 1991, 1992, 1993, 1994, 2000, 2004, 2005, 2006,
-   2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -20,10 +20,10 @@
 #ifndef INC_DEFS_H
 #define INC_DEFS_H 1
 
-#if !defined(ALREADY_INCLUDED_CONFIG_H)
+#if !defined ALREADY_INCLUDED_CONFIG_H
 /*
  * Savannah bug #20128: if we include some system header and it
- * includes some othersecond system header, the second system header
+ * includes some other second system header, the second system header
  * may in fact turn out to be a file provided by gnulib.  For that
  * situation, we need to have already included <config.h> so that the
  * Gnulib files have access to the information probed by their
@@ -258,7 +258,7 @@ struct predicate
 
   /* Only used for debugging, but defined unconditionally so individual
      modules can be compiled with -DDEBUG.  */
-  char *p_name;
+  const char *p_name;
 
   /* The type of this node.  There are two kinds.  The first is real
      predicates ("primaries") such as -perm, -print, or -exec.  The
@@ -382,13 +382,13 @@ typedef bool (*PARSE_FUNC)(const struct parser_table *p,
 struct parser_table
 {
   enum arg_type type;
-  char *parser_name;
+  const char *parser_name;
   PARSE_FUNC parser_func;
   PRED_FUNC    pred_func;
 };
 
 /* parser.c */
-const struct parser_table* find_parser (char *search_name);
+const struct parser_table* find_parser (const char *search_name);
 bool parse_print (const struct parser_table*, char *argv[], int *arg_ptr);
 void pred_sanity_check (const struct predicate *predicates);
 void check_option_combinations (const struct predicate *p);
@@ -462,11 +462,7 @@ PREDICATEFUNCTION pred_context;
 
 
 
-int launch (struct buildcmd_control *ctl, void *usercontext, int argc, char **argv);
-
-
 char *find_pred_name (PRED_FUNC pred_func);
-
 
 
 void print_predicate (FILE *fp, const struct predicate *p);
@@ -624,7 +620,6 @@ struct options
    */
   enum quoting_style err_quoting_style;
 };
-extern struct options options;
 
 
 struct state
@@ -642,7 +637,7 @@ struct state
   /* The file being operated on, relative to the current directory.
      Used for stat, readlink, remove, and opendir.  */
   char *rel_pathname;
-  /* The directory fd to which rel_pathname is relative.  Thsi is relevant
+  /* The directory fd to which rel_pathname is relative.  This is relevant
    * when we're navigating the hierarchy with fts() and using FTS_CWDFD.
    */
   int cwd_dir_fd;
@@ -669,6 +664,10 @@ struct state
   /* Avoid multiple error messages for the same file. */
   bool already_issued_stat_error_msg;
 };
+
+/* exec.c */
+bool impl_pred_exec (const char *pathname, struct stat *stat_buf, struct predicate *pred_ptr);
+int launch (struct buildcmd_control *ctl, void *usercontext, int argc, char **argv);
 
 /* finddata.c */
 extern struct options options;

@@ -23,7 +23,8 @@ be made and tested, and what resources exist to help developers.
 
 This is edition @value{EDITION}, for findutils version @value{VERSION}.
 
-Copyright @copyright{} 2007, 2008, 2010 Free Software Foundation, Inc.
+Copyright @copyright{} 2007, 2008, 2010, 2011 Free Software Foundation,
+Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3
@@ -42,7 +43,7 @@ Free Documentation License''.
 
 @page
 @vskip 0pt plus 1filll
-@insertcopying{}
+@insertcopying
 @end titlepage
 
 @contents
@@ -233,10 +234,10 @@ circumstances.
 
 @menu
 * Make the Compiler Find the Bugs::
+* Factor Out Repeated Code::
 * The File System Is Being Modified::
 * Don't Trust the File System Contents::
 * Debugging is For Users Too::
-* Factor Out Repeated Code::
 @end menu
 
 @node    Make the Compiler Find the Bugs
@@ -470,7 +471,7 @@ information we can work to remove unnecessary file system operations.
 Valgrind is a tool which dynamically verifies the memory accesses a
 program makes to ensure that they are valid (for example, that the
 behaviour of the program does not in any way depend on the contents of
-uninitialised memory).
+uninitialized memory).
 
 @item DejaGnu
 DejaGnu is the test framework used to run the findutils test suite
@@ -838,7 +839,7 @@ traditional ("old") format that locate uses on other Unix systems.
 
 When locate reads filenames from a LOCATE02 database (the default
 format), the buffer into which data is read is automatically extended
-to accomodate the length of the filenames.
+to accommodate the length of the filenames.
 
 This automatic buffer extension does not happen for old-format
 databases.  Instead a 1026-byte buffer is used.  When a longer
@@ -1177,7 +1178,7 @@ Release} field of these bugs appropriately and make sure the
 @comment LocalWords: POSIXLY fls fprintf strftime locale's EDT GMT AP
 @comment LocalWords: EST diff perl backquotes sprintf Falstad Oct cron
 @comment LocalWords: eg vmunix mkdir afs allexec allwrite ARG bigram
-@comment LocalWords: bigrams cd chmod comp crc CVS dbfile dum eof
+@comment LocalWords: bigrams cd chmod comp crc CVS dbfile eof
 @comment LocalWords: fileserver filesystem fn frcode Ghazi Hnewc iXX
 @comment LocalWords: joeuser Kaveh localpaths localuser LOGNAME
 @comment LocalWords: Meyering mv netpaths netuser nonblank nonblanks

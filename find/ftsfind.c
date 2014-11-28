@@ -1,7 +1,6 @@
 /* find -- search for files in a directory hierarchy (fts version)
-   Copyright (C) 1990, 1091, 1992, 1993, 1994, 2000, 2003, 2004,
-                 2005, 2006, 2007, 2008, 2009,
-                 2010 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1091, 1992, 1993, 1994, 2000, 2003, 2004, 2005,
+   2006, 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -27,38 +26,39 @@
    Dan Bernstein <brnstnd@kramden.acf.nyu.edu>.
 */
 
-
+/* config.h must always be included first. */
 #include <config.h>
-#include "defs.h"
 
+
+/* system headers. */
+#include <assert.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <inttypes.h>
+#include <locale.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+/* gnulib headers. */
+#include "cloexec.h"
+#include "closeout.h"
+#include "error.h"
+#include "fts_.h"
+#include "gettext.h"
+#include "progname.h"
+#include "quotearg.h"
+#include "save-cwd.h"
+#include "xgetcwd.h"
+
+/* find headers. */
+#include "defs.h"
+#include "dircallback.h"
+#include "fdleak.h"
+#include "unused-result.h"
 
 #define USE_SAFE_CHDIR 1
 #undef  STAT_MOUNTPOINTS
 
-
-#include <errno.h>
-#include <assert.h>
-
-#include <fcntl.h>
-#include <sys/stat.h>
-
-#include <unistd.h>
-
-#include "progname.h"
-#include "closeout.h"
-#include "quotearg.h"
-#include "fts_.h"
-#include "save-cwd.h"
-#include "xgetcwd.h"
-#include "error.h"
-#include "dircallback.h"
-#include "cloexec.h"
-#include "fdleak.h"
-#include "unused-result.h"
-
-#ifdef HAVE_LOCALE_H
-#include <locale.h>
-#endif
 
 #if ENABLE_NLS
 # include <libintl.h>
@@ -79,7 +79,7 @@
 /* FTS_TIGHT_CYCLE_CHECK tries to work around Savannah bug #17877
  * (but actually using it doesn't fix the bug).
  */
-static int ftsoptions = FTS_NOSTAT|FTS_TIGHT_CYCLE_CHECK|FTS_CWDFD;
+static int ftsoptions = FTS_NOSTAT|FTS_TIGHT_CYCLE_CHECK|FTS_CWDFD|FTS_VERBATIM;
 
 static int prev_depth = INT_MIN; /* fts_level can be < 0 */
 static int curr_fd = -1;
@@ -303,14 +303,14 @@ show_outstanding_execdirs (FILE *fp)
 	    pfx = NULL;
 	  if (pfx)
 	    {
-	      int i;
+	      size_t i;
 	      const struct exec_val *execp = &p->args.exec_vec;
 	      ++seen;
 
 	      fprintf (fp, "%s ", pfx);
 	      if (execp->multiple)
 		fprintf (fp, "multiple ");
-	      fprintf (fp, "%d args: ", execp->state.cmd_argc);
+	      fprintf (fp, "%" PRIuMAX " args: ", (uintmax_t) execp->state.cmd_argc);
 	      for (i=0; i<execp->state.cmd_argc; ++i)
 		{
 		  fprintf (fp, "%s ", execp->state.cmd_argv[i]);
@@ -564,7 +564,7 @@ find (char *arg)
     {
       int level = INT_MIN;
 
-      while ( (ent=fts_read (p)) != NULL )
+      while ( (errno=0, ent=fts_read (p)) != NULL )
 	{
 	  if (state.execdirs_outstanding)
 	    {
@@ -589,6 +589,16 @@ find (char *arg)
 	  state.type = state.have_type ? ent->fts_statp->st_mode : 0;
 	  consider_visiting (p, ent);
 	}
+      /* fts_read returned NULL; distinguish between "finished" and "error". */
+      if (errno)
+	{
+	  error (0, errno,
+		 "failed to read file names from file system at or below %s",
+		 safely_quote_err_filename (0, arg));
+	  error_severity (EXIT_FAILURE);
+	  return false;
+	}
+
       if (0 != fts_close (p))
 	{
 	  /* Here we break the abstraction of fts_close a bit, because we
@@ -664,7 +674,7 @@ main (int argc, char **argv)
   if (NULL == state.shared_files)
     {
       error (EXIT_FAILURE, errno,
-	     _("Failed initialise shared-file hash table"));
+	     _("Failed initialize shared-file hash table"));
     }
 
   /* Set the option defaults before we do the locale initialisation as
@@ -678,7 +688,10 @@ main (int argc, char **argv)
 
   bindtextdomain (PACKAGE, LOCALEDIR);
   textdomain (PACKAGE);
-  atexit (close_stdout);
+  if (atexit (close_stdout))
+    {
+      error (EXIT_FAILURE, errno, _("The atexit library function failed"));
+    }
 
   /* Check for -P, -H or -L options.  Also -D and -O, which are
    * both GNU extensions.

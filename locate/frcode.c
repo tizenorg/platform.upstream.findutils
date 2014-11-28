@@ -1,5 +1,6 @@
 /* frcode -- front-compress a sorted list
-   Copyright (C) 1994, 2005, 2006, 2007, 2010 Free Software Foundation, Inc.
+   Copyright (C) 1994, 2005, 2006, 2007, 2010, 2011 Free Software
+   Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -62,18 +63,30 @@
    Modified by James Youngman <jay@gnu.org>.
 */
 
+/* config.h must be included first. */
 #include <config.h>
 
-
-#include <stdio.h>
-#include <limits.h>
+/* system headers. */
 #include <assert.h>
 #include <errno.h>
-#include <sys/types.h>
+#include <getopt.h>
+#include <limits.h>
 #include <stdbool.h>
-#include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
 
+/* gnulib headers. */
+#include "closeout.h"
+#include "error.h"
+#include "gettext.h"
+#include "progname.h"
+#include "xalloc.h"
+
+/* find headers. */
+#include "findutils-version.h"
+#include "locatedb.h"
 
 #if ENABLE_NLS
 # include <libintl.h>
@@ -95,16 +108,6 @@
  */
 # define N_(String) String
 #endif
-
-
-#include "locatedb.h"
-#include <getopt.h>
-#include "error.h"
-#include "closeout.h"
-#include "findutils-version.h"
-#include "xalloc.h"
-#include "progname.h"
-
 
 
 /* Write out a 16-bit int, high byte first (network byte order).
@@ -225,7 +228,10 @@ main (int argc, char **argv)
   else
     set_program_name ("frcode");
 
-  atexit (close_stdout);
+  if (atexit (close_stdout))
+    {
+      error (EXIT_FAILURE, errno, _("The atexit library function failed"));
+    }
 
   pathsize = oldpathsize = 1026; /* Increased as necessary by getline.  */
   path = xmalloc (pathsize);

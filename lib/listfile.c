@@ -1,6 +1,6 @@
 /* listfile.c -- display a long listing of a file
-   Copyright (C) 1991, 1993, 2000, 2004, 2005, 2007,
-                 2008, 2010 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 2000, 2004, 2005, 2007, 2008, 2010, 2011
+   Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,32 +15,36 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
+/* config.h must be included first. */
 #include <config.h>
 
+/* system headers. */
 #include <alloca.h>
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <pwd.h>
-#include <grp.h>
-#include <time.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <string.h>
-#include <unistd.h> /* for readlink() */
-#include <openat.h>
+#include <grp.h>
 #include <locale.h>
+#include <openat.h>
+#include <pwd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <time.h>
+#include <unistd.h> /* for readlink() */
 
-#include "human.h"
-#include "pathmax.h"
+/* gnulib headers. */
+#include "areadlink.h"
 #include "error.h"
 #include "filemode.h"
+#include "human.h"
 #include "idcache.h"
-#include "areadlink.h"
+#include "pathmax.h"
+#include "stat-size.h"
+#include "gettext.h"
 
+/* find headers. */
 #include "listfile.h"
 
 /* Since major is a function on SVR4, we can't use `ifndef major'.  */
@@ -53,69 +57,6 @@
 #define HAVE_MAJOR
 #endif
 
-
-
-/* Get or fake the disk device blocksize.
-   Usually defined by sys/param.h (if at all).  */
-#ifndef DEV_BSIZE
-# ifdef BSIZE
-#  define DEV_BSIZE BSIZE
-# else /* !BSIZE */
-#  define DEV_BSIZE 4096
-# endif /* !BSIZE */
-#endif /* !DEV_BSIZE */
-
-/* Extract or fake data from a `struct stat'.
-   ST_BLKSIZE: Preferred I/O blocksize for the file, in bytes.
-   ST_NBLOCKS: Number of blocks in the file, including indirect blocks.
-   ST_NBLOCKSIZE: Size of blocks used when calculating ST_NBLOCKS.  */
-#ifndef HAVE_STRUCT_STAT_ST_BLOCKS
-# define ST_BLKSIZE(statbuf) DEV_BSIZE
-# if defined _POSIX_SOURCE || !defined BSIZE /* fileblocks.c uses BSIZE.  */
-#  define ST_NBLOCKS(statbuf) \
-  (S_ISREG ((statbuf).st_mode) \
-   || S_ISDIR ((statbuf).st_mode) \
-   ? (statbuf).st_size / ST_NBLOCKSIZE + ((statbuf).st_size % ST_NBLOCKSIZE != 0) : 0)
-# else /* !_POSIX_SOURCE && BSIZE */
-#  define ST_NBLOCKS(statbuf) \
-  (S_ISREG ((statbuf).st_mode) \
-   || S_ISDIR ((statbuf).st_mode) \
-   ? st_blocks ((statbuf).st_size) : 0)
-# endif /* !_POSIX_SOURCE && BSIZE */
-#else /* HAVE_STRUCT_STAT_ST_BLOCKS */
-/* Some systems, like Sequents, return st_blksize of 0 on pipes. */
-# define ST_BLKSIZE(statbuf) ((statbuf).st_blksize > 0 \
-			       ? (statbuf).st_blksize : DEV_BSIZE)
-# if defined hpux || defined __hpux__ || defined __hpux
-/* HP-UX counts st_blocks in 1024-byte units.
-   This loses when mixing HP-UX and BSD filesystems with NFS.  */
-#  define ST_NBLOCKSIZE 1024
-# else /* !hpux */
-#  if defined _AIX && defined _I386
-/* AIX PS/2 counts st_blocks in 4K units.  */
-#   define ST_NBLOCKSIZE (4 * 1024)
-#  else /* not AIX PS/2 */
-#   if defined _CRAY
-#    define ST_NBLOCKS(statbuf) \
-  (S_ISREG ((statbuf).st_mode) \
-   || S_ISDIR ((statbuf).st_mode) \
-   ? (statbuf).st_blocks * ST_BLKSIZE(statbuf)/ST_NBLOCKSIZE : 0)
-#   endif /* _CRAY */
-#  endif /* not AIX PS/2 */
-# endif /* !hpux */
-#endif /* HAVE_STRUCT_STAT_ST_BLOCKS */
-
-#ifndef ST_NBLOCKS
-# define ST_NBLOCKS(statbuf) \
-  (S_ISREG ((statbuf).st_mode) \
-   || S_ISDIR ((statbuf).st_mode) \
-   ? (statbuf).st_blocks : 0)
-#endif
-
-#ifndef ST_NBLOCKSIZE
-# define ST_NBLOCKSIZE 512
-#endif
-
 #ifdef major			/* Might be defined in sys/types.h.  */
 #define HAVE_MAJOR
 #endif
@@ -125,16 +66,20 @@
 #endif
 #undef HAVE_MAJOR
 
+#if ENABLE_NLS
+# include <libintl.h>
+# define _(Text) gettext (Text)
+#else
+# define _(Text) Text
+#endif
+#ifdef gettext_noop
+# define N_(String) gettext_noop (String)
+#else
+/* See locate.c for explanation as to why not use (String) */
+# define N_(String) String
+#endif
 
-static void print_name (register const char *p, FILE *stream, int literal_control_chars);
-
-
-size_t
-file_blocksize (const struct stat *p)
-{
-  return ST_NBLOCKSIZE;
-}
-
+static bool print_name (register const char *p, FILE *stream, int literal_control_chars);
 
 
 /* NAME is the name to print.
@@ -160,6 +105,8 @@ list_file (const char *name,
   char const *user_name;
   char const *group_name;
   char hbuf[LONGEST_HUMAN_READABLE + 1];
+  bool output_good = true;
+  int failed_at = 000;
 
 #if HAVE_ST_DM_MODE
   /* Cray DMF: look at the file's migrated, not real, status */
@@ -168,181 +115,301 @@ list_file (const char *name,
   strmode (statp->st_mode, modebuf);
 #endif
 
-  fprintf (stream, "%6s ",
-	   human_readable ((uintmax_t) statp->st_ino, hbuf,
-			   human_ceiling,
-			   1, 1));
+  if (fprintf (stream, "%6s ",
+	       human_readable ((uintmax_t) statp->st_ino, hbuf,
+			       human_ceiling,
+			       1u, 1u)) < 0)
+    {
+      output_good = false;
+      failed_at = 100;
+    }
 
-  fprintf (stream, "%4s ",
-	   human_readable ((uintmax_t) ST_NBLOCKS (*statp), hbuf,
-			   human_ceiling,
-			   ST_NBLOCKSIZE, output_block_size));
+  if (output_good)
+    {
+      if (fprintf (stream, "%4s ",
+		   human_readable ((uintmax_t) ST_NBLOCKS (*statp), hbuf,
+				   human_ceiling,
+				   ST_NBLOCKSIZE, output_block_size)) < 0)
+	{
+	  output_good = false;
+	  failed_at = 200;
+	}
+    }
 
+  if (output_good)
+    {
+      /* modebuf includes the space between the mode and the number of links,
+	 as the POSIX "optional alternate access method flag".  */
+      if (fprintf (stream, "%s%3lu ", modebuf, (unsigned long) statp->st_nlink) < 0)
+	{
+	  output_good = false;
+	  failed_at = 300;
+	}
+    }
 
-  /* modebuf includes the space between the mode and the number of links,
-     as the POSIX "optional alternate access method flag".  */
-  fprintf (stream, "%s%3lu ", modebuf, (unsigned long) statp->st_nlink);
+  if (output_good)
+    {
+      user_name = getuser (statp->st_uid);
+      if (user_name)
+	{
+	  output_good = (fprintf (stream, "%-8s ", user_name) >= 0);
+	  if (!output_good)
+	    failed_at = 400;
+	}
+      else
+	{
+	  output_good = (fprintf (stream, "%-8lu ", (unsigned long) statp->st_uid) >= 0);
+	  if (!output_good)
+	    failed_at = 450;
+	}
+    }
 
-  user_name = getuser (statp->st_uid);
-  if (user_name)
-    fprintf (stream, "%-8s ", user_name);
-  else
-    fprintf (stream, "%-8lu ", (unsigned long) statp->st_uid);
+  if (output_good)
+    {
+      group_name = getgroup (statp->st_gid);
+      if (group_name)
+	{
+	  output_good = (fprintf (stream, "%-8s ", group_name) >= 0);
+	  if (!output_good)
+	    failed_at = 500;
+	}
+      else
+	{
+	  output_good = (fprintf (stream, "%-8lu ", (unsigned long) statp->st_gid) >= 0);
+	  if (!output_good)
+	    failed_at = 550;
+	}
+    }
 
-  group_name = getgroup (statp->st_gid);
-  if (group_name)
-    fprintf (stream, "%-8s ", group_name);
-  else
-    fprintf (stream, "%-8lu ", (unsigned long) statp->st_gid);
-
-  if (S_ISCHR (statp->st_mode) || S_ISBLK (statp->st_mode))
-#ifdef HAVE_ST_RDEV
-    fprintf (stream, "%3lu, %3lu ",
-	     (unsigned long) major (statp->st_rdev),
-	     (unsigned long) minor (statp->st_rdev));
+  if (output_good)
+    {
+      if (S_ISCHR (statp->st_mode) || S_ISBLK (statp->st_mode))
+	{
+#ifdef HAVE_STRUCT_STAT_ST_RDEV
+	  if (fprintf (stream, "%3lu, %3lu ",
+		       (unsigned long) major (statp->st_rdev),
+		       (unsigned long) minor (statp->st_rdev)) < 0)
+	    {
+	      output_good = false;
+	      failed_at = 600;
+	    }
 #else
-    fprintf (stream, "         ");
+	  if (fprintf (stream, "         ") < 0)
+	    {
+	      output_good = false;
+	      failed_at = 700;
+	    }
 #endif
-  else
-    fprintf (stream, "%8s ",
-	     human_readable ((uintmax_t) statp->st_size, hbuf,
-			     human_ceiling,
-			     1,
-			     output_block_size < 0 ? output_block_size : 1));
-
-  if ((when_local = localtime (&statp->st_mtime)))
-    {
-      char init_bigbuf[256];
-      char *buf = init_bigbuf;
-      size_t bufsize = sizeof init_bigbuf;
-
-      /* Use strftime rather than ctime, because the former can produce
-	 locale-dependent names for the month (%b).
-
-	 Output the year if the file is fairly old or in the future.
-	 POSIX says the cutoff is 6 months old;
-	 approximate this by 6*30 days.
-	 Allow a 1 hour slop factor for what is considered "the future",
-	 to allow for NFS server/client clock disagreement.  */
-      char const *fmt =
-	((current_time - 6 * 30 * 24 * 60 * 60 <= statp->st_mtime
-	  && statp->st_mtime <= current_time + 60 * 60)
-	 ? "%b %e %H:%M"
-	 : "%b %e  %Y");
-
-      while (!strftime (buf, bufsize, fmt, when_local))
-	buf = alloca (bufsize *= 2);
-
-      fprintf (stream, "%s ", buf);
-    }
-  else
-    {
-      /* The time cannot be represented as a local time;
-	 print it as a huge integer number of seconds.  */
-      int width = 12;
-
-      if (statp->st_mtime < 0)
-	{
-	  char const *num = human_readable (- (uintmax_t) statp->st_mtime,
-					    hbuf, human_ceiling, 1, 1);
-	  int sign_width = width - strlen (num);
-	  fprintf (stream, "%*s%s ",
-		   sign_width < 0 ? 0 : sign_width, "-", num);
-	}
-      else
-	fprintf (stream, "%*s ", width,
-		 human_readable ((uintmax_t) statp->st_mtime, hbuf,
-				 human_ceiling,
-				 1, 1));
-    }
-
-  print_name (name, stream, literal_control_chars);
-
-  if (S_ISLNK (statp->st_mode))
-    {
-      char *linkname = areadlinkat (dir_fd, relname);
-      if (linkname)
-	{
-	  fputs (" -> ", stream);
-	  print_name (linkname, stream, literal_control_chars);
 	}
       else
 	{
-	  /* POSIX requires in the case of find that if we issue a
-	   * diagnostic we should have a nonzero status.  However,
-	   * this function doesn't have a way of telling the caller to
-	   * do that.  However, since this function is only used when
-	   * processing "-ls", we're already using an extension.
-	   */
-	  error (0, errno, "%s", name);
+	  if (fprintf (stream, "%8s ",
+		       human_readable ((uintmax_t) statp->st_size, hbuf,
+				       human_ceiling,
+				       1,
+				       output_block_size < 0 ? output_block_size : 1)) < 0)
+	    {
+	      output_good = false;
+	      failed_at = 800;
+	    }
 	}
-      free (linkname);
     }
-  putc ('\n', stream);
+
+  if (output_good)
+    {
+      if ((when_local = localtime (&statp->st_mtime)))
+	{
+	  char init_bigbuf[256];
+	  char *buf = init_bigbuf;
+	  size_t bufsize = sizeof init_bigbuf;
+
+	  /* Use strftime rather than ctime, because the former can produce
+	     locale-dependent names for the month (%b).
+
+	     Output the year if the file is fairly old or in the future.
+	     POSIX says the cutoff is 6 months old;
+	     approximate this by 6*30 days.
+	     Allow a 1 hour slop factor for what is considered "the future",
+	     to allow for NFS server/client clock disagreement.  */
+	  char const *fmt =
+	    ((current_time - 6 * 30 * 24 * 60 * 60 <= statp->st_mtime
+	      && statp->st_mtime <= current_time + 60 * 60)
+	     ? "%b %e %H:%M"
+	     : "%b %e  %Y");
+
+	  while (!strftime (buf, bufsize, fmt, when_local))
+	    buf = alloca (bufsize *= 2);
+
+	  if (fprintf (stream, "%s ", buf) < 0)
+	    {
+	      output_good = false;
+	      failed_at = 900;
+	    }
+	}
+      else
+	{
+	  /* The time cannot be represented as a local time;
+	     print it as a huge integer number of seconds.  */
+	  int width = 12;
+
+	  if (statp->st_mtime < 0)
+	    {
+	      char const *num = human_readable (- (uintmax_t) statp->st_mtime,
+						hbuf, human_ceiling, 1, 1);
+	      int sign_width = width - strlen (num);
+	      if (fprintf (stream, "%*s%s ",
+			   sign_width < 0 ? 0 : sign_width, "-", num) < 0)
+		{
+		  output_good = false;
+		  failed_at = 1000;
+		}
+	    }
+	  else
+	    {
+	      if (fprintf (stream, "%*s ", width,
+			   human_readable ((uintmax_t) statp->st_mtime, hbuf,
+					   human_ceiling,
+					   1, 1)) < 0)
+		{
+		  output_good = false;
+		  failed_at = 1100;
+		}
+	    }
+	}
+    }
+
+  if (output_good)
+    {
+      output_good = print_name (name, stream, literal_control_chars);
+      if (!output_good)
+	{
+	  failed_at = 1200;
+	}
+    }
+
+  if (output_good)
+    {
+      if (S_ISLNK (statp->st_mode))
+	{
+	  char *linkname = areadlinkat (dir_fd, relname);
+	  if (linkname)
+	    {
+	      if (fputs (" -> ", stream) < 0)
+		{
+		  output_good = false;
+		  failed_at = 1300;
+		}
+	      if (output_good)
+		{
+		  output_good = print_name (linkname, stream, literal_control_chars);
+		  if (!output_good)
+		    {
+		      failed_at = 1350;
+		    }
+		}
+	    }
+	  else
+	    {
+	      /* POSIX requires in the case of find that if we issue a
+	       * diagnostic we should have a nonzero status.  However,
+	       * this function doesn't have a way of telling the caller to
+	       * do that.  However, since this function is only used when
+	       * processing "-ls", we're already using an extension.
+	       */
+	      error (0, errno, "%s", name);
+	    }
+	  free (linkname);
+	}
+      if (output_good)
+	{
+	  if (EOF == putc ('\n', stream))
+	    {
+	      output_good = false;
+	      if (!output_good)
+		{
+		  failed_at = 1400;
+		}
+	    }
+	}
+    }
+  if (!output_good)
+    {
+      error (EXIT_FAILURE, errno, _("Failed to write output (at stage %d)"), failed_at);
+    }
 }
 
 
-static void
+static bool
 print_name_without_quoting (const char *p, FILE *stream)
 {
-  fprintf (stream, "%s", p);
+  return (fprintf (stream, "%s", p) >= 0);
 }
 
 
-static void
+static bool
 print_name_with_quoting (register const char *p, FILE *stream)
 {
   register unsigned char c;
 
   while ((c = *p++) != '\0')
     {
+      int fprintf_result = -1;
       switch (c)
 	{
 	case '\\':
-	  fprintf (stream, "\\\\");
+	  fprintf_result = fprintf (stream, "\\\\");
 	  break;
 
 	case '\n':
-	  fprintf (stream, "\\n");
+	  fprintf_result = fprintf (stream, "\\n");
 	  break;
 
 	case '\b':
-	  fprintf (stream, "\\b");
+	  fprintf_result = fprintf (stream, "\\b");
 	  break;
 
 	case '\r':
-	  fprintf (stream, "\\r");
+	  fprintf_result = fprintf (stream, "\\r");
 	  break;
 
 	case '\t':
-	  fprintf (stream, "\\t");
+	  fprintf_result = fprintf (stream, "\\t");
 	  break;
 
 	case '\f':
-	  fprintf (stream, "\\f");
+	  fprintf_result = fprintf (stream, "\\f");
 	  break;
 
 	case ' ':
-	  fprintf (stream, "\\ ");
+	  fprintf_result = fprintf (stream, "\\ ");
 	  break;
 
 	case '"':
-	  fprintf (stream, "\\\"");
+	  fprintf_result = fprintf (stream, "\\\"");
 	  break;
 
 	default:
 	  if (c > 040 && c < 0177)
-	    putc (c, stream);
+	    {
+	      if (EOF == putc (c, stream))
+		return false;
+	      fprintf_result = 1; /* otherwise it's used uninitialized. */
+	    }
 	  else
-	    fprintf (stream, "\\%03o", (unsigned int) c);
+	    {
+	      fprintf_result = fprintf (stream, "\\%03o", (unsigned int) c);
+	    }
 	}
+      if (fprintf_result < 0)
+	return false;
     }
+  return true;
 }
 
-static void print_name (register const char *p, FILE *stream, int literal_control_chars)
+static bool print_name (register const char *p, FILE *stream, int literal_control_chars)
 {
   if (literal_control_chars)
-    print_name_without_quoting (p, stream);
+    return print_name_without_quoting (p, stream);
   else
-    print_name_with_quoting (p, stream);
+    return print_name_with_quoting (p, stream);
 }

@@ -1,7 +1,8 @@
-# generated automatically by aclocal 1.11.1 -*- Autoconf -*-
+# generated automatically by aclocal 1.11.6 -*- Autoconf -*-
 
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-# 2005, 2006, 2007, 2008, 2009  Free Software Foundation, Inc.
+# 2005, 2006, 2007, 2008, 2009, 2010, 2011 Free Software Foundation,
+# Inc.
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -13,17 +14,20 @@
 
 m4_ifndef([AC_AUTOCONF_VERSION],
   [m4_copy([m4_PACKAGE_VERSION], [AC_AUTOCONF_VERSION])])dnl
-m4_if(m4_defn([AC_AUTOCONF_VERSION]), [2.67],,
-[m4_warning([this file was generated for autoconf 2.67.
+m4_if(m4_defn([AC_AUTOCONF_VERSION]), [2.69],,
+[m4_warning([this file was generated for autoconf 2.69.
 You have another version of autoconf.  It may work, but is not guaranteed to.
 If you have problems, you may need to regenerate the build system entirely.
 To do so, use the procedure documented by the package, typically `autoreconf'.])])
 
-# Copyright (C) 2002, 2003, 2005, 2006, 2007, 2008  Free Software Foundation, Inc.
+# Copyright (C) 2002, 2003, 2005, 2006, 2007, 2008, 2011 Free Software
+# Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
+
+# serial 1
 
 # AM_AUTOMAKE_VERSION(VERSION)
 # ----------------------------
@@ -34,7 +38,7 @@ AC_DEFUN([AM_AUTOMAKE_VERSION],
 [am__api_version='1.11'
 dnl Some users find AM_AUTOMAKE_VERSION and mistake it for a way to
 dnl require some minimum version.  Point them to the right macro.
-m4_if([$1], [1.11.1], [],
+m4_if([$1], [1.11.6], [],
       [AC_FATAL([Do not call $0, use AM_INIT_AUTOMAKE([$1]).])])dnl
 ])
 
@@ -50,18 +54,20 @@ m4_define([_AM_AUTOCONF_VERSION], [])
 # Call AM_AUTOMAKE_VERSION and AM_AUTOMAKE_VERSION so they can be traced.
 # This function is AC_REQUIREd by AM_INIT_AUTOMAKE.
 AC_DEFUN([AM_SET_CURRENT_AUTOMAKE_VERSION],
-[AM_AUTOMAKE_VERSION([1.11.1])dnl
+[AM_AUTOMAKE_VERSION([1.11.6])dnl
 m4_ifndef([AC_AUTOCONF_VERSION],
   [m4_copy([m4_PACKAGE_VERSION], [AC_AUTOCONF_VERSION])])dnl
 _AM_AUTOCONF_VERSION(m4_defn([AC_AUTOCONF_VERSION]))])
 
 # AM_AUX_DIR_EXPAND                                         -*- Autoconf -*-
 
-# Copyright (C) 2001, 2003, 2005  Free Software Foundation, Inc.
+# Copyright (C) 2001, 2003, 2005, 2011 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
+
+# serial 1
 
 # For projects using AC_CONFIG_AUX_DIR([foo]), Autoconf sets
 # $ac_aux_dir to `$srcdir/foo'.  In other projects, it is set to
@@ -144,14 +150,14 @@ AC_CONFIG_COMMANDS_PRE(
 Usually this means the macro was only invoked conditionally.]])
 fi])])
 
-# Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2009
-# Free Software Foundation, Inc.
+# Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2009,
+# 2010, 2011 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
 
-# serial 10
+# serial 12
 
 # There are a few dirty hacks below to avoid letting `AC_PROG_CC' be
 # written in clear, in which case automake, when reading aclocal.m4,
@@ -191,6 +197,7 @@ AC_CACHE_CHECK([dependency style of $depcc],
   # instance it was reported that on HP-UX the gcc test will end up
   # making a dummy file named `D' -- because `-MD' means `put the output
   # in D'.
+  rm -rf conftest.dir
   mkdir conftest.dir
   # Copy depcomp to subdir because otherwise we won't find it if we're
   # using a relative directory.
@@ -255,7 +262,7 @@ AC_CACHE_CHECK([dependency style of $depcc],
 	break
       fi
       ;;
-    msvisualcpp | msvcmsys)
+    msvc7 | msvc7msys | msvisualcpp | msvcmsys)
       # This compiler won't grok `-c -o', but also, the minuso test has
       # not run yet.  These depmodes are late enough in the game, and
       # so weak that their functioning should not be impacted.
@@ -320,10 +327,13 @@ AC_DEFUN([AM_DEP_TRACK],
 if test "x$enable_dependency_tracking" != xno; then
   am_depcomp="$ac_aux_dir/depcomp"
   AMDEPBACKSLASH='\'
+  am__nodep='_no'
 fi
 AM_CONDITIONAL([AMDEP], [test "x$enable_dependency_tracking" != xno])
 AC_SUBST([AMDEPBACKSLASH])dnl
 _AM_SUBST_NOTMAKE([AMDEPBACKSLASH])dnl
+AC_SUBST([am__nodep])dnl
+_AM_SUBST_NOTMAKE([am__nodep])dnl
 ])
 
 # Generate code to set up dependency tracking.              -*- Autoconf -*-
@@ -545,11 +555,14 @@ for _am_header in $config_headers :; do
 done
 echo "timestamp for $_am_arg" >`AS_DIRNAME(["$_am_arg"])`/stamp-h[]$_am_stamp_count])
 
-# Copyright (C) 2001, 2003, 2005, 2008  Free Software Foundation, Inc.
+# Copyright (C) 2001, 2003, 2005, 2008, 2011 Free Software Foundation,
+# Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
+
+# serial 1
 
 # AM_PROG_INSTALL_SH
 # ------------------
@@ -717,11 +730,14 @@ else
 fi
 ])
 
-# Copyright (C) 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
+# Copyright (C) 2003, 2004, 2005, 2006, 2011 Free Software Foundation,
+# Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
+
+# serial 1
 
 # AM_PROG_MKDIR_P
 # ---------------
@@ -745,13 +761,14 @@ esac
 
 # Helper functions for option handling.                     -*- Autoconf -*-
 
-# Copyright (C) 2001, 2002, 2003, 2005, 2008  Free Software Foundation, Inc.
+# Copyright (C) 2001, 2002, 2003, 2005, 2008, 2010 Free Software
+# Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
 
-# serial 4
+# serial 5
 
 # _AM_MANGLE_OPTION(NAME)
 # -----------------------
@@ -759,13 +776,13 @@ AC_DEFUN([_AM_MANGLE_OPTION],
 [[_AM_OPTION_]m4_bpatsubst($1, [[^a-zA-Z0-9_]], [_])])
 
 # _AM_SET_OPTION(NAME)
-# ------------------------------
+# --------------------
 # Set option NAME.  Presently that only means defining a flag for this option.
 AC_DEFUN([_AM_SET_OPTION],
 [m4_define(_AM_MANGLE_OPTION([$1]), 1)])
 
 # _AM_SET_OPTIONS(OPTIONS)
-# ----------------------------------
+# ------------------------
 # OPTIONS is a space-separated list of Automake options.
 AC_DEFUN([_AM_SET_OPTIONS],
 [m4_foreach_w([_AM_Option], [$1], [_AM_SET_OPTION(_AM_Option)])])
@@ -776,31 +793,208 @@ AC_DEFUN([_AM_SET_OPTIONS],
 AC_DEFUN([_AM_IF_OPTION],
 [m4_ifset(_AM_MANGLE_OPTION([$1]), [$2], [$3])])
 
-# Copyright (C) 1996, 1997, 1998, 2000, 2001, 2002, 2003, 2005, 2006
-# Free Software Foundation, Inc.
+# Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2008, 2009,
+# 2011 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
 
-# serial 5
+# serial 2
 
-AC_DEFUN([AM_C_PROTOTYPES],
-[AC_REQUIRE([AC_C_PROTOTYPES])
-if test "$ac_cv_prog_cc_stdc" != no; then
-  U= ANSI2KNR=
-else
-  U=_ ANSI2KNR=./ansi2knr
-fi
-# Ensure some checks needed by ansi2knr itself.
-AC_REQUIRE([AC_HEADER_STDC])
-AC_CHECK_HEADERS([string.h])
-AC_SUBST([U])dnl
-AC_SUBST([ANSI2KNR])dnl
-_AM_SUBST_NOTMAKE([ANSI2KNR])dnl
+# AM_PATH_PYTHON([MINIMUM-VERSION], [ACTION-IF-FOUND], [ACTION-IF-NOT-FOUND])
+# ---------------------------------------------------------------------------
+# Adds support for distributing Python modules and packages.  To
+# install modules, copy them to $(pythondir), using the python_PYTHON
+# automake variable.  To install a package with the same name as the
+# automake package, install to $(pkgpythondir), or use the
+# pkgpython_PYTHON automake variable.
+#
+# The variables $(pyexecdir) and $(pkgpyexecdir) are provided as
+# locations to install python extension modules (shared libraries).
+# Another macro is required to find the appropriate flags to compile
+# extension modules.
+#
+# If your package is configured with a different prefix to python,
+# users will have to add the install directory to the PYTHONPATH
+# environment variable, or create a .pth file (see the python
+# documentation for details).
+#
+# If the MINIMUM-VERSION argument is passed, AM_PATH_PYTHON will
+# cause an error if the version of python installed on the system
+# doesn't meet the requirement.  MINIMUM-VERSION should consist of
+# numbers and dots only.
+AC_DEFUN([AM_PATH_PYTHON],
+ [
+  dnl Find a Python interpreter.  Python versions prior to 2.0 are not
+  dnl supported. (2.0 was released on October 16, 2000).
+  m4_define_default([_AM_PYTHON_INTERPRETER_LIST],
+[python python2 python3 python3.2 python3.1 python3.0 python2.7 dnl
+ python2.6 python2.5 python2.4 python2.3 python2.2 python2.1 python2.0])
+
+  AC_ARG_VAR([PYTHON], [the Python interpreter])
+
+  m4_if([$1],[],[
+    dnl No version check is needed.
+    # Find any Python interpreter.
+    if test -z "$PYTHON"; then
+      AC_PATH_PROGS([PYTHON], _AM_PYTHON_INTERPRETER_LIST, :)
+    fi
+    am_display_PYTHON=python
+  ], [
+    dnl A version check is needed.
+    if test -n "$PYTHON"; then
+      # If the user set $PYTHON, use it and don't search something else.
+      AC_MSG_CHECKING([whether $PYTHON version >= $1])
+      AM_PYTHON_CHECK_VERSION([$PYTHON], [$1],
+			      [AC_MSG_RESULT(yes)],
+			      [AC_MSG_ERROR(too old)])
+      am_display_PYTHON=$PYTHON
+    else
+      # Otherwise, try each interpreter until we find one that satisfies
+      # VERSION.
+      AC_CACHE_CHECK([for a Python interpreter with version >= $1],
+	[am_cv_pathless_PYTHON],[
+	for am_cv_pathless_PYTHON in _AM_PYTHON_INTERPRETER_LIST none; do
+	  test "$am_cv_pathless_PYTHON" = none && break
+	  AM_PYTHON_CHECK_VERSION([$am_cv_pathless_PYTHON], [$1], [break])
+	done])
+      # Set $PYTHON to the absolute path of $am_cv_pathless_PYTHON.
+      if test "$am_cv_pathless_PYTHON" = none; then
+	PYTHON=:
+      else
+        AC_PATH_PROG([PYTHON], [$am_cv_pathless_PYTHON])
+      fi
+      am_display_PYTHON=$am_cv_pathless_PYTHON
+    fi
+  ])
+
+  if test "$PYTHON" = :; then
+  dnl Run any user-specified action, or abort.
+    m4_default([$3], [AC_MSG_ERROR([no suitable Python interpreter found])])
+  else
+
+  dnl Query Python for its version number.  Getting [:3] seems to be
+  dnl the best way to do this; it's what "site.py" does in the standard
+  dnl library.
+
+  AC_CACHE_CHECK([for $am_display_PYTHON version], [am_cv_python_version],
+    [am_cv_python_version=`$PYTHON -c "import sys; sys.stdout.write(sys.version[[:3]])"`])
+  AC_SUBST([PYTHON_VERSION], [$am_cv_python_version])
+
+  dnl Use the values of $prefix and $exec_prefix for the corresponding
+  dnl values of PYTHON_PREFIX and PYTHON_EXEC_PREFIX.  These are made
+  dnl distinct variables so they can be overridden if need be.  However,
+  dnl general consensus is that you shouldn't need this ability.
+
+  AC_SUBST([PYTHON_PREFIX], ['${prefix}'])
+  AC_SUBST([PYTHON_EXEC_PREFIX], ['${exec_prefix}'])
+
+  dnl At times (like when building shared libraries) you may want
+  dnl to know which OS platform Python thinks this is.
+
+  AC_CACHE_CHECK([for $am_display_PYTHON platform], [am_cv_python_platform],
+    [am_cv_python_platform=`$PYTHON -c "import sys; sys.stdout.write(sys.platform)"`])
+  AC_SUBST([PYTHON_PLATFORM], [$am_cv_python_platform])
+
+
+  dnl Set up 4 directories:
+
+  dnl pythondir -- where to install python scripts.  This is the
+  dnl   site-packages directory, not the python standard library
+  dnl   directory like in previous automake betas.  This behavior
+  dnl   is more consistent with lispdir.m4 for example.
+  dnl Query distutils for this directory.
+  AC_CACHE_CHECK([for $am_display_PYTHON script directory],
+    [am_cv_python_pythondir],
+    [if test "x$prefix" = xNONE
+     then
+       am_py_prefix=$ac_default_prefix
+     else
+       am_py_prefix=$prefix
+     fi
+     am_cv_python_pythondir=`$PYTHON -c "import sys; from distutils import sysconfig; sys.stdout.write(sysconfig.get_python_lib(0,0,prefix='$am_py_prefix'))" 2>/dev/null`
+     case $am_cv_python_pythondir in
+     $am_py_prefix*)
+       am__strip_prefix=`echo "$am_py_prefix" | sed 's|.|.|g'`
+       am_cv_python_pythondir=`echo "$am_cv_python_pythondir" | sed "s,^$am__strip_prefix,$PYTHON_PREFIX,"`
+       ;;
+     *)
+       case $am_py_prefix in
+         /usr|/System*) ;;
+         *)
+	  am_cv_python_pythondir=$PYTHON_PREFIX/lib/python$PYTHON_VERSION/site-packages
+	  ;;
+       esac
+       ;;
+     esac
+    ])
+  AC_SUBST([pythondir], [$am_cv_python_pythondir])
+
+  dnl pkgpythondir -- $PACKAGE directory under pythondir.  Was
+  dnl   PYTHON_SITE_PACKAGE in previous betas, but this naming is
+  dnl   more consistent with the rest of automake.
+
+  AC_SUBST([pkgpythondir], [\${pythondir}/$PACKAGE])
+
+  dnl pyexecdir -- directory for installing python extension modules
+  dnl   (shared libraries)
+  dnl Query distutils for this directory.
+  AC_CACHE_CHECK([for $am_display_PYTHON extension module directory],
+    [am_cv_python_pyexecdir],
+    [if test "x$exec_prefix" = xNONE
+     then
+       am_py_exec_prefix=$am_py_prefix
+     else
+       am_py_exec_prefix=$exec_prefix
+     fi
+     am_cv_python_pyexecdir=`$PYTHON -c "import sys; from distutils import sysconfig; sys.stdout.write(sysconfig.get_python_lib(1,0,prefix='$am_py_exec_prefix'))" 2>/dev/null`
+     case $am_cv_python_pyexecdir in
+     $am_py_exec_prefix*)
+       am__strip_prefix=`echo "$am_py_exec_prefix" | sed 's|.|.|g'`
+       am_cv_python_pyexecdir=`echo "$am_cv_python_pyexecdir" | sed "s,^$am__strip_prefix,$PYTHON_EXEC_PREFIX,"`
+       ;;
+     *)
+       case $am_py_exec_prefix in
+         /usr|/System*) ;;
+         *)
+	   am_cv_python_pyexecdir=$PYTHON_EXEC_PREFIX/lib/python$PYTHON_VERSION/site-packages
+	   ;;
+       esac
+       ;;
+     esac
+    ])
+  AC_SUBST([pyexecdir], [$am_cv_python_pyexecdir])
+
+  dnl pkgpyexecdir -- $(pyexecdir)/$(PACKAGE)
+
+  AC_SUBST([pkgpyexecdir], [\${pyexecdir}/$PACKAGE])
+
+  dnl Run any user-specified action.
+  $2
+  fi
+
 ])
 
-AU_DEFUN([fp_C_PROTOTYPES], [AM_C_PROTOTYPES])
+
+# AM_PYTHON_CHECK_VERSION(PROG, VERSION, [ACTION-IF-TRUE], [ACTION-IF-FALSE])
+# ---------------------------------------------------------------------------
+# Run ACTION-IF-TRUE if the Python interpreter PROG has version >= VERSION.
+# Run ACTION-IF-FALSE otherwise.
+# This test uses sys.hexversion instead of the string equivalent (first
+# word of sys.version), in order to cope with versions such as 2.2c1.
+# This supports Python 2.0 or higher. (2.0 was released on October 16, 2000).
+AC_DEFUN([AM_PYTHON_CHECK_VERSION],
+ [prog="import sys
+# split strings by '.' and convert to numeric.  Append some zeros
+# because we need at least 4 digits for the hex conversion.
+# map returns an iterator in Python 3.0 and a list in 2.x
+minver = list(map(int, '$2'.split('.'))) + [[0, 0, 0]]
+minverhex = 0
+# xrange is not present in Python 3.0 and range returns an iterator
+for i in list(range(0, 4)): minverhex = (minverhex << 8) + minver[[i]]
+sys.exit(sys.hexversion < minverhex)"
+  AS_IF([AM_RUN_LOG([$1 -c "$prog"])], [$3], [$4])])
 
 # Check to make sure that the build environment is sane.    -*- Autoconf -*-
 
@@ -867,11 +1061,13 @@ Check your system clock])
 fi
 AC_MSG_RESULT(yes)])
 
-# Copyright (C) 2001, 2003, 2005  Free Software Foundation, Inc.
+# Copyright (C) 2001, 2003, 2005, 2011 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
+
+# serial 1
 
 # AM_PROG_INSTALL_STRIP
 # ---------------------
@@ -895,13 +1091,13 @@ fi
 INSTALL_STRIP_PROGRAM="\$(install_sh) -c -s"
 AC_SUBST([INSTALL_STRIP_PROGRAM])])
 
-# Copyright (C) 2006, 2008  Free Software Foundation, Inc.
+# Copyright (C) 2006, 2008, 2010 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
 
-# serial 2
+# serial 3
 
 # _AM_SUBST_NOTMAKE(VARIABLE)
 # ---------------------------
@@ -910,13 +1106,13 @@ AC_SUBST([INSTALL_STRIP_PROGRAM])])
 AC_DEFUN([_AM_SUBST_NOTMAKE])
 
 # AM_SUBST_NOTMAKE(VARIABLE)
-# ---------------------------
+# --------------------------
 # Public sister of _AM_SUBST_NOTMAKE.
 AC_DEFUN([AM_SUBST_NOTMAKE], [_AM_SUBST_NOTMAKE($@)])
 
 # Check how to create a tarball.                            -*- Autoconf -*-
 
-# Copyright (C) 2004, 2005  Free Software Foundation, Inc.
+# Copyright (C) 2004, 2005, 2012 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -938,10 +1134,11 @@ AC_DEFUN([AM_SUBST_NOTMAKE], [_AM_SUBST_NOTMAKE($@)])
 # a tarball read from stdin.
 #     $(am__untar) < result.tar
 AC_DEFUN([_AM_PROG_TAR],
-[# Always define AMTAR for backward compatibility.
-AM_MISSING_PROG([AMTAR], [tar])
+[# Always define AMTAR for backward compatibility.  Yes, it's still used
+# in the wild :-(  We should find a proper way to deprecate it ...
+AC_SUBST([AMTAR], ['$${TAR-tar}'])
 m4_if([$1], [v7],
-     [am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'],
+     [am__tar='$${TAR-tar} chof - "$$tardir"' am__untar='$${TAR-tar} xf -'],
      [m4_case([$1], [ustar],, [pax],,
               [m4_fatal([Unknown tar format])])
 AC_MSG_CHECKING([how to create a $1 tar archive])
@@ -1015,230 +1212,280 @@ m4_include([m4/mkinstalldirs.m4])
 m4_include([m4/noreturn.m4])
 m4_include([m4/nullsort.m4])
 m4_include([m4/withfts.m4])
-m4_include([gnulib/m4/00gnulib.m4])
-m4_include([gnulib/m4/alloca.m4])
-m4_include([gnulib/m4/argmatch.m4])
-m4_include([gnulib/m4/assert.m4])
-m4_include([gnulib/m4/bison.m4])
-m4_include([gnulib/m4/btowc.m4])
-m4_include([gnulib/m4/canonicalize.m4])
-m4_include([gnulib/m4/chdir-long.m4])
-m4_include([gnulib/m4/chown.m4])
-m4_include([gnulib/m4/clock_time.m4])
-m4_include([gnulib/m4/cloexec.m4])
-m4_include([gnulib/m4/close-stream.m4])
-m4_include([gnulib/m4/close.m4])
-m4_include([gnulib/m4/closein.m4])
-m4_include([gnulib/m4/closeout.m4])
-m4_include([gnulib/m4/codeset.m4])
-m4_include([gnulib/m4/configmake.m4])
-m4_include([gnulib/m4/ctype.m4])
-m4_include([gnulib/m4/cycle-check.m4])
-m4_include([gnulib/m4/d-ino.m4])
-m4_include([gnulib/m4/d-type.m4])
-m4_include([gnulib/m4/dirent-safer.m4])
-m4_include([gnulib/m4/dirent_h.m4])
-m4_include([gnulib/m4/dirfd.m4])
-m4_include([gnulib/m4/dirname.m4])
-m4_include([gnulib/m4/double-slash-root.m4])
-m4_include([gnulib/m4/dup2.m4])
-m4_include([gnulib/m4/eealloc.m4])
-m4_include([gnulib/m4/environ.m4])
-m4_include([gnulib/m4/errno_h.m4])
-m4_include([gnulib/m4/error.m4])
-m4_include([gnulib/m4/euidaccess.m4])
-m4_include([gnulib/m4/extensions.m4])
-m4_include([gnulib/m4/faccessat.m4])
-m4_include([gnulib/m4/fchdir.m4])
-m4_include([gnulib/m4/fclose.m4])
-m4_include([gnulib/m4/fcntl-o.m4])
-m4_include([gnulib/m4/fcntl-safer.m4])
-m4_include([gnulib/m4/fcntl.m4])
-m4_include([gnulib/m4/fcntl_h.m4])
-m4_include([gnulib/m4/fdopendir.m4])
-m4_include([gnulib/m4/fflush.m4])
-m4_include([gnulib/m4/fileblocks.m4])
-m4_include([gnulib/m4/filemode.m4])
-m4_include([gnulib/m4/flexmember.m4])
-m4_include([gnulib/m4/float_h.m4])
-m4_include([gnulib/m4/fnmatch.m4])
-m4_include([gnulib/m4/fopen.m4])
-m4_include([gnulib/m4/fpending.m4])
-m4_include([gnulib/m4/fpurge.m4])
-m4_include([gnulib/m4/freading.m4])
-m4_include([gnulib/m4/fseeko.m4])
-m4_include([gnulib/m4/fstypename.m4])
-m4_include([gnulib/m4/ftell.m4])
-m4_include([gnulib/m4/ftello.m4])
-m4_include([gnulib/m4/fts.m4])
-m4_include([gnulib/m4/getcwd-abort-bug.m4])
-m4_include([gnulib/m4/getcwd-path-max.m4])
-m4_include([gnulib/m4/getcwd.m4])
-m4_include([gnulib/m4/getdelim.m4])
-m4_include([gnulib/m4/getdtablesize.m4])
-m4_include([gnulib/m4/getgroups.m4])
-m4_include([gnulib/m4/getline.m4])
-m4_include([gnulib/m4/getopt.m4])
-m4_include([gnulib/m4/getpagesize.m4])
-m4_include([gnulib/m4/gettext.m4])
-m4_include([gnulib/m4/gettime.m4])
-m4_include([gnulib/m4/gettimeofday.m4])
-m4_include([gnulib/m4/getugroups.m4])
-m4_include([gnulib/m4/glibc21.m4])
-m4_include([gnulib/m4/gnulib-common.m4])
-m4_include([gnulib/m4/gnulib-comp.m4])
-m4_include([gnulib/m4/group-member.m4])
-m4_include([gnulib/m4/hash.m4])
-m4_include([gnulib/m4/human.m4])
-m4_include([gnulib/m4/i-ring.m4])
-m4_include([gnulib/m4/iconv.m4])
-m4_include([gnulib/m4/idcache.m4])
-m4_include([gnulib/m4/include_next.m4])
-m4_include([gnulib/m4/inline.m4])
-m4_include([gnulib/m4/intlmacosx.m4])
-m4_include([gnulib/m4/intmax_t.m4])
-m4_include([gnulib/m4/inttostr.m4])
-m4_include([gnulib/m4/inttypes-pri.m4])
-m4_include([gnulib/m4/inttypes.m4])
-m4_include([gnulib/m4/inttypes_h.m4])
-m4_include([gnulib/m4/isblank.m4])
-m4_include([gnulib/m4/iswblank.m4])
-m4_include([gnulib/m4/langinfo_h.m4])
-m4_include([gnulib/m4/lchown.m4])
-m4_include([gnulib/m4/lcmessage.m4])
-m4_include([gnulib/m4/lib-ld.m4])
-m4_include([gnulib/m4/lib-link.m4])
-m4_include([gnulib/m4/lib-prefix.m4])
-m4_include([gnulib/m4/libunistring-base.m4])
-m4_include([gnulib/m4/localcharset.m4])
-m4_include([gnulib/m4/locale-fr.m4])
-m4_include([gnulib/m4/locale-ja.m4])
-m4_include([gnulib/m4/locale-tr.m4])
-m4_include([gnulib/m4/locale-zh.m4])
-m4_include([gnulib/m4/locale_h.m4])
-m4_include([gnulib/m4/localename.m4])
-m4_include([gnulib/m4/lock.m4])
-m4_include([gnulib/m4/longlong.m4])
-m4_include([gnulib/m4/ls-mntd-fs.m4])
-m4_include([gnulib/m4/lseek.m4])
-m4_include([gnulib/m4/lstat.m4])
-m4_include([gnulib/m4/malloc.m4])
-m4_include([gnulib/m4/malloca.m4])
-m4_include([gnulib/m4/math_h.m4])
-m4_include([gnulib/m4/mathfunc.m4])
-m4_include([gnulib/m4/mbchar.m4])
-m4_include([gnulib/m4/mbiter.m4])
-m4_include([gnulib/m4/mbrtowc.m4])
-m4_include([gnulib/m4/mbsinit.m4])
-m4_include([gnulib/m4/mbslen.m4])
-m4_include([gnulib/m4/mbsrtowcs.m4])
-m4_include([gnulib/m4/mbstate_t.m4])
-m4_include([gnulib/m4/mbtowc.m4])
-m4_include([gnulib/m4/memchr.m4])
-m4_include([gnulib/m4/mempcpy.m4])
-m4_include([gnulib/m4/memrchr.m4])
-m4_include([gnulib/m4/mgetgroups.m4])
-m4_include([gnulib/m4/mkdir.m4])
-m4_include([gnulib/m4/mktime.m4])
-m4_include([gnulib/m4/mmap-anon.m4])
-m4_include([gnulib/m4/mode_t.m4])
-m4_include([gnulib/m4/modechange.m4])
-m4_include([gnulib/m4/mountlist.m4])
-m4_include([gnulib/m4/multiarch.m4])
-m4_include([gnulib/m4/nl_langinfo.m4])
-m4_include([gnulib/m4/nls.m4])
-m4_include([gnulib/m4/onceonly.m4])
-m4_include([gnulib/m4/open.m4])
-m4_include([gnulib/m4/openat.m4])
-m4_include([gnulib/m4/parse-datetime.m4])
-m4_include([gnulib/m4/pathmax.m4])
-m4_include([gnulib/m4/perror.m4])
-m4_include([gnulib/m4/po.m4])
-m4_include([gnulib/m4/printf.m4])
-m4_include([gnulib/m4/priv-set.m4])
-m4_include([gnulib/m4/progtest.m4])
-m4_include([gnulib/m4/putenv.m4])
-m4_include([gnulib/m4/quote.m4])
-m4_include([gnulib/m4/quotearg.m4])
-m4_include([gnulib/m4/readlink.m4])
-m4_include([gnulib/m4/readlinkat.m4])
-m4_include([gnulib/m4/realloc.m4])
-m4_include([gnulib/m4/regex.m4])
-m4_include([gnulib/m4/rmdir.m4])
-m4_include([gnulib/m4/rpmatch.m4])
-m4_include([gnulib/m4/same.m4])
-m4_include([gnulib/m4/save-cwd.m4])
-m4_include([gnulib/m4/savedir.m4])
-m4_include([gnulib/m4/selinux-context-h.m4])
-m4_include([gnulib/m4/selinux-selinux-h.m4])
-m4_include([gnulib/m4/setenv.m4])
-m4_include([gnulib/m4/setlocale.m4])
-m4_include([gnulib/m4/size_max.m4])
-m4_include([gnulib/m4/sleep.m4])
-m4_include([gnulib/m4/snprintf.m4])
-m4_include([gnulib/m4/ssize_t.m4])
-m4_include([gnulib/m4/st_dm_mode.m4])
-m4_include([gnulib/m4/stat-time.m4])
-m4_include([gnulib/m4/stat.m4])
-m4_include([gnulib/m4/stdarg.m4])
-m4_include([gnulib/m4/stdbool.m4])
-m4_include([gnulib/m4/stddef_h.m4])
-m4_include([gnulib/m4/stdint.m4])
-m4_include([gnulib/m4/stdint_h.m4])
-m4_include([gnulib/m4/stdio-safer.m4])
-m4_include([gnulib/m4/stdio_h.m4])
-m4_include([gnulib/m4/stdlib_h.m4])
-m4_include([gnulib/m4/stpcpy.m4])
-m4_include([gnulib/m4/strcase.m4])
-m4_include([gnulib/m4/strcasestr.m4])
-m4_include([gnulib/m4/strdup.m4])
-m4_include([gnulib/m4/strerror.m4])
-m4_include([gnulib/m4/strftime.m4])
-m4_include([gnulib/m4/string_h.m4])
-m4_include([gnulib/m4/strings_h.m4])
-m4_include([gnulib/m4/strndup.m4])
-m4_include([gnulib/m4/strnlen.m4])
-m4_include([gnulib/m4/strstr.m4])
-m4_include([gnulib/m4/strtoimax.m4])
-m4_include([gnulib/m4/strtol.m4])
-m4_include([gnulib/m4/strtoll.m4])
-m4_include([gnulib/m4/strtoul.m4])
-m4_include([gnulib/m4/strtoull.m4])
-m4_include([gnulib/m4/strtoumax.m4])
-m4_include([gnulib/m4/symlink.m4])
-m4_include([gnulib/m4/symlinkat.m4])
-m4_include([gnulib/m4/sys_stat_h.m4])
-m4_include([gnulib/m4/sys_time_h.m4])
-m4_include([gnulib/m4/sys_wait_h.m4])
-m4_include([gnulib/m4/thread.m4])
-m4_include([gnulib/m4/threadlib.m4])
-m4_include([gnulib/m4/time_h.m4])
-m4_include([gnulib/m4/time_r.m4])
-m4_include([gnulib/m4/timespec.m4])
-m4_include([gnulib/m4/tm_gmtoff.m4])
-m4_include([gnulib/m4/ungetc.m4])
-m4_include([gnulib/m4/unistd-safer.m4])
-m4_include([gnulib/m4/unistd_h.m4])
-m4_include([gnulib/m4/unlink.m4])
-m4_include([gnulib/m4/unlinkdir.m4])
-m4_include([gnulib/m4/usleep.m4])
-m4_include([gnulib/m4/vasnprintf.m4])
-m4_include([gnulib/m4/version-etc.m4])
-m4_include([gnulib/m4/warn-on-use.m4])
-m4_include([gnulib/m4/warnings.m4])
-m4_include([gnulib/m4/wchar_h.m4])
-m4_include([gnulib/m4/wchar_t.m4])
-m4_include([gnulib/m4/wcrtomb.m4])
-m4_include([gnulib/m4/wctob.m4])
-m4_include([gnulib/m4/wctomb.m4])
-m4_include([gnulib/m4/wctype_h.m4])
-m4_include([gnulib/m4/wcwidth.m4])
-m4_include([gnulib/m4/wint_t.m4])
-m4_include([gnulib/m4/xalloc.m4])
-m4_include([gnulib/m4/xgetcwd.m4])
-m4_include([gnulib/m4/xsize.m4])
-m4_include([gnulib/m4/xstrndup.m4])
-m4_include([gnulib/m4/xstrtod.m4])
-m4_include([gnulib/m4/xstrtol.m4])
-m4_include([gnulib/m4/yesno.m4])
-m4_include([gnulib/m4/yield.m4])
+m4_include([gl/m4/00gnulib.m4])
+m4_include([gl/m4/absolute-header.m4])
+m4_include([gl/m4/alloca.m4])
+m4_include([gl/m4/arpa_inet_h.m4])
+m4_include([gl/m4/assert.m4])
+m4_include([gl/m4/bison.m4])
+m4_include([gl/m4/btowc.m4])
+m4_include([gl/m4/byteswap.m4])
+m4_include([gl/m4/canonicalize.m4])
+m4_include([gl/m4/chdir-long.m4])
+m4_include([gl/m4/check-math-lib.m4])
+m4_include([gl/m4/clock_time.m4])
+m4_include([gl/m4/close-stream.m4])
+m4_include([gl/m4/close.m4])
+m4_include([gl/m4/closedir.m4])
+m4_include([gl/m4/closein.m4])
+m4_include([gl/m4/closeout.m4])
+m4_include([gl/m4/codeset.m4])
+m4_include([gl/m4/configmake.m4])
+m4_include([gl/m4/ctype.m4])
+m4_include([gl/m4/cycle-check.m4])
+m4_include([gl/m4/d-ino.m4])
+m4_include([gl/m4/d-type.m4])
+m4_include([gl/m4/dirent-safer.m4])
+m4_include([gl/m4/dirent_h.m4])
+m4_include([gl/m4/dirfd.m4])
+m4_include([gl/m4/dirname.m4])
+m4_include([gl/m4/double-slash-root.m4])
+m4_include([gl/m4/dup.m4])
+m4_include([gl/m4/dup2.m4])
+m4_include([gl/m4/eealloc.m4])
+m4_include([gl/m4/environ.m4])
+m4_include([gl/m4/errno_h.m4])
+m4_include([gl/m4/error.m4])
+m4_include([gl/m4/euidaccess.m4])
+m4_include([gl/m4/exponentd.m4])
+m4_include([gl/m4/exponentf.m4])
+m4_include([gl/m4/exponentl.m4])
+m4_include([gl/m4/extensions.m4])
+m4_include([gl/m4/extern-inline.m4])
+m4_include([gl/m4/faccessat.m4])
+m4_include([gl/m4/fchdir.m4])
+m4_include([gl/m4/fcntl-o.m4])
+m4_include([gl/m4/fcntl-safer.m4])
+m4_include([gl/m4/fcntl.m4])
+m4_include([gl/m4/fcntl_h.m4])
+m4_include([gl/m4/fdopen.m4])
+m4_include([gl/m4/fdopendir.m4])
+m4_include([gl/m4/fflush.m4])
+m4_include([gl/m4/fileblocks.m4])
+m4_include([gl/m4/filemode.m4])
+m4_include([gl/m4/filenamecat.m4])
+m4_include([gl/m4/flexmember.m4])
+m4_include([gl/m4/float_h.m4])
+m4_include([gl/m4/fnmatch.m4])
+m4_include([gl/m4/fopen.m4])
+m4_include([gl/m4/fpending.m4])
+m4_include([gl/m4/fpieee.m4])
+m4_include([gl/m4/fpurge.m4])
+m4_include([gl/m4/freadahead.m4])
+m4_include([gl/m4/freading.m4])
+m4_include([gl/m4/fseek.m4])
+m4_include([gl/m4/fseeko.m4])
+m4_include([gl/m4/fstat.m4])
+m4_include([gl/m4/fstatat.m4])
+m4_include([gl/m4/fstypename.m4])
+m4_include([gl/m4/ftell.m4])
+m4_include([gl/m4/ftello.m4])
+m4_include([gl/m4/ftruncate.m4])
+m4_include([gl/m4/fts.m4])
+m4_include([gl/m4/getcwd-abort-bug.m4])
+m4_include([gl/m4/getcwd-path-max.m4])
+m4_include([gl/m4/getcwd.m4])
+m4_include([gl/m4/getdelim.m4])
+m4_include([gl/m4/getdtablesize.m4])
+m4_include([gl/m4/getgroups.m4])
+m4_include([gl/m4/gethostname.m4])
+m4_include([gl/m4/getline.m4])
+m4_include([gl/m4/getopt.m4])
+m4_include([gl/m4/getpagesize.m4])
+m4_include([gl/m4/gettext.m4])
+m4_include([gl/m4/gettime.m4])
+m4_include([gl/m4/gettimeofday.m4])
+m4_include([gl/m4/glibc21.m4])
+m4_include([gl/m4/gnulib-common.m4])
+m4_include([gl/m4/gnulib-comp.m4])
+m4_include([gl/m4/group-member.m4])
+m4_include([gl/m4/human.m4])
+m4_include([gl/m4/i-ring.m4])
+m4_include([gl/m4/iconv.m4])
+m4_include([gl/m4/idcache.m4])
+m4_include([gl/m4/include_next.m4])
+m4_include([gl/m4/inet_pton.m4])
+m4_include([gl/m4/inline.m4])
+m4_include([gl/m4/intlmacosx.m4])
+m4_include([gl/m4/intmax_t.m4])
+m4_include([gl/m4/inttostr.m4])
+m4_include([gl/m4/inttypes-pri.m4])
+m4_include([gl/m4/inttypes.m4])
+m4_include([gl/m4/inttypes_h.m4])
+m4_include([gl/m4/ioctl.m4])
+m4_include([gl/m4/isblank.m4])
+m4_include([gl/m4/isfinite.m4])
+m4_include([gl/m4/isinf.m4])
+m4_include([gl/m4/isnand.m4])
+m4_include([gl/m4/isnanf.m4])
+m4_include([gl/m4/isnanl.m4])
+m4_include([gl/m4/iswblank.m4])
+m4_include([gl/m4/langinfo_h.m4])
+m4_include([gl/m4/largefile.m4])
+m4_include([gl/m4/lcmessage.m4])
+m4_include([gl/m4/lib-ld.m4])
+m4_include([gl/m4/lib-link.m4])
+m4_include([gl/m4/lib-prefix.m4])
+m4_include([gl/m4/libunistring-base.m4])
+m4_include([gl/m4/localcharset.m4])
+m4_include([gl/m4/locale-fr.m4])
+m4_include([gl/m4/locale-ja.m4])
+m4_include([gl/m4/locale-tr.m4])
+m4_include([gl/m4/locale-zh.m4])
+m4_include([gl/m4/locale_h.m4])
+m4_include([gl/m4/localeconv.m4])
+m4_include([gl/m4/localename.m4])
+m4_include([gl/m4/lock.m4])
+m4_include([gl/m4/longlong.m4])
+m4_include([gl/m4/ls-mntd-fs.m4])
+m4_include([gl/m4/lseek.m4])
+m4_include([gl/m4/lstat.m4])
+m4_include([gl/m4/malloc.m4])
+m4_include([gl/m4/malloca.m4])
+m4_include([gl/m4/manywarnings.m4])
+m4_include([gl/m4/math_h.m4])
+m4_include([gl/m4/mathfunc.m4])
+m4_include([gl/m4/mbchar.m4])
+m4_include([gl/m4/mbiter.m4])
+m4_include([gl/m4/mbrtowc.m4])
+m4_include([gl/m4/mbsinit.m4])
+m4_include([gl/m4/mbslen.m4])
+m4_include([gl/m4/mbsrtowcs.m4])
+m4_include([gl/m4/mbstate_t.m4])
+m4_include([gl/m4/mbtowc.m4])
+m4_include([gl/m4/memchr.m4])
+m4_include([gl/m4/mempcpy.m4])
+m4_include([gl/m4/memrchr.m4])
+m4_include([gl/m4/mktime.m4])
+m4_include([gl/m4/mmap-anon.m4])
+m4_include([gl/m4/mode_t.m4])
+m4_include([gl/m4/modechange.m4])
+m4_include([gl/m4/modf.m4])
+m4_include([gl/m4/mountlist.m4])
+m4_include([gl/m4/msvc-inval.m4])
+m4_include([gl/m4/msvc-nothrow.m4])
+m4_include([gl/m4/multiarch.m4])
+m4_include([gl/m4/nanosleep.m4])
+m4_include([gl/m4/netinet_in_h.m4])
+m4_include([gl/m4/nl_langinfo.m4])
+m4_include([gl/m4/nls.m4])
+m4_include([gl/m4/nocrash.m4])
+m4_include([gl/m4/off_t.m4])
+m4_include([gl/m4/onceonly.m4])
+m4_include([gl/m4/open.m4])
+m4_include([gl/m4/openat.m4])
+m4_include([gl/m4/opendir.m4])
+m4_include([gl/m4/parse-datetime.m4])
+m4_include([gl/m4/pathmax.m4])
+m4_include([gl/m4/perror.m4])
+m4_include([gl/m4/pipe.m4])
+m4_include([gl/m4/po.m4])
+m4_include([gl/m4/printf.m4])
+m4_include([gl/m4/priv-set.m4])
+m4_include([gl/m4/progtest.m4])
+m4_include([gl/m4/putenv.m4])
+m4_include([gl/m4/quote.m4])
+m4_include([gl/m4/quotearg.m4])
+m4_include([gl/m4/raise.m4])
+m4_include([gl/m4/read.m4])
+m4_include([gl/m4/readdir.m4])
+m4_include([gl/m4/readlink.m4])
+m4_include([gl/m4/readlinkat.m4])
+m4_include([gl/m4/realloc.m4])
+m4_include([gl/m4/regex.m4])
+m4_include([gl/m4/rewinddir.m4])
+m4_include([gl/m4/rmdir.m4])
+m4_include([gl/m4/rpmatch.m4])
+m4_include([gl/m4/safe-read.m4])
+m4_include([gl/m4/same.m4])
+m4_include([gl/m4/save-cwd.m4])
+m4_include([gl/m4/savedir.m4])
+m4_include([gl/m4/select.m4])
+m4_include([gl/m4/selinux-context-h.m4])
+m4_include([gl/m4/selinux-selinux-h.m4])
+m4_include([gl/m4/setenv.m4])
+m4_include([gl/m4/setlocale.m4])
+m4_include([gl/m4/sigaction.m4])
+m4_include([gl/m4/signal_h.m4])
+m4_include([gl/m4/signalblocking.m4])
+m4_include([gl/m4/size_max.m4])
+m4_include([gl/m4/sleep.m4])
+m4_include([gl/m4/snprintf.m4])
+m4_include([gl/m4/socketlib.m4])
+m4_include([gl/m4/sockets.m4])
+m4_include([gl/m4/socklen.m4])
+m4_include([gl/m4/sockpfaf.m4])
+m4_include([gl/m4/ssize_t.m4])
+m4_include([gl/m4/st_dm_mode.m4])
+m4_include([gl/m4/stat-size.m4])
+m4_include([gl/m4/stat-time.m4])
+m4_include([gl/m4/stat.m4])
+m4_include([gl/m4/stdalign.m4])
+m4_include([gl/m4/stdarg.m4])
+m4_include([gl/m4/stdbool.m4])
+m4_include([gl/m4/stddef_h.m4])
+m4_include([gl/m4/stdint.m4])
+m4_include([gl/m4/stdint_h.m4])
+m4_include([gl/m4/stdio_h.m4])
+m4_include([gl/m4/stdlib_h.m4])
+m4_include([gl/m4/stpcpy.m4])
+m4_include([gl/m4/strcase.m4])
+m4_include([gl/m4/strcasestr.m4])
+m4_include([gl/m4/strdup.m4])
+m4_include([gl/m4/strerror.m4])
+m4_include([gl/m4/strerror_r.m4])
+m4_include([gl/m4/strftime.m4])
+m4_include([gl/m4/string_h.m4])
+m4_include([gl/m4/strings_h.m4])
+m4_include([gl/m4/strndup.m4])
+m4_include([gl/m4/strnlen.m4])
+m4_include([gl/m4/strstr.m4])
+m4_include([gl/m4/strtol.m4])
+m4_include([gl/m4/strtoul.m4])
+m4_include([gl/m4/strtoull.m4])
+m4_include([gl/m4/strtoumax.m4])
+m4_include([gl/m4/symlink.m4])
+m4_include([gl/m4/symlinkat.m4])
+m4_include([gl/m4/sys_ioctl_h.m4])
+m4_include([gl/m4/sys_select_h.m4])
+m4_include([gl/m4/sys_socket_h.m4])
+m4_include([gl/m4/sys_stat_h.m4])
+m4_include([gl/m4/sys_time_h.m4])
+m4_include([gl/m4/sys_types_h.m4])
+m4_include([gl/m4/sys_uio_h.m4])
+m4_include([gl/m4/sys_utsname_h.m4])
+m4_include([gl/m4/sys_wait_h.m4])
+m4_include([gl/m4/thread.m4])
+m4_include([gl/m4/threadlib.m4])
+m4_include([gl/m4/time_h.m4])
+m4_include([gl/m4/time_r.m4])
+m4_include([gl/m4/timespec.m4])
+m4_include([gl/m4/tm_gmtoff.m4])
+m4_include([gl/m4/trunc.m4])
+m4_include([gl/m4/uname.m4])
+m4_include([gl/m4/ungetc.m4])
+m4_include([gl/m4/unistd-safer.m4])
+m4_include([gl/m4/unistd_h.m4])
+m4_include([gl/m4/unlink.m4])
+m4_include([gl/m4/unlinkat.m4])
+m4_include([gl/m4/unlinkdir.m4])
+m4_include([gl/m4/vasnprintf.m4])
+m4_include([gl/m4/version-etc.m4])
+m4_include([gl/m4/warn-on-use.m4])
+m4_include([gl/m4/warnings.m4])
+m4_include([gl/m4/wchar_h.m4])
+m4_include([gl/m4/wchar_t.m4])
+m4_include([gl/m4/wcrtomb.m4])
+m4_include([gl/m4/wctob.m4])
+m4_include([gl/m4/wctomb.m4])
+m4_include([gl/m4/wctype_h.m4])
+m4_include([gl/m4/wcwidth.m4])
+m4_include([gl/m4/wint_t.m4])
+m4_include([gl/m4/xalloc.m4])
+m4_include([gl/m4/xgetcwd.m4])
+m4_include([gl/m4/xsize.m4])
+m4_include([gl/m4/xstrndup.m4])
+m4_include([gl/m4/xstrtod.m4])
+m4_include([gl/m4/xstrtol.m4])
+m4_include([gl/m4/yesno.m4])
+m4_include([gl/m4/yield.m4])

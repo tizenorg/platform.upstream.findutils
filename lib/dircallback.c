@@ -1,5 +1,6 @@
 /* listfile.c -- run a function in a specific directory
-   Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation,
+   Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,20 +19,22 @@
 /* This file was written by James Youngman, based on gnulib'c at-func.c.
  */
 
-
+/* config.h must be included first. */
 #include <config.h>
 
-
-#include "openat.h"
-#include <stdarg.h>
-#include <stddef.h>
+/* system headers. */
 #include <errno.h>
-#include <sys/stat.h>
 #include <locale.h>
+#include <stdarg.h>
+#include <sys/stat.h>
 
+/* gnulib headers. */
 #include "fcntl--.h"
+#include "openat.h"
 #include "save-cwd.h"
 
+/* find headers. */
+#include "dircallback.h"
 
 int
 run_in_dir (const struct saved_cwd *there,

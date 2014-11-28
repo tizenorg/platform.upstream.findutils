@@ -1,5 +1,5 @@
 /* Test inttostr functions, and incidentally, INT_BUFSIZE_BOUND
-   Copyright (C) 2010-2011 Free Software Foundation, Inc.
+   Copyright (C) 2010-2014 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@
 #define CAST_VAL(T,V) (TYPE_SIGNED (T) ? (intmax_t) (V) : (uintmax_t) (V))
 #define V_min(T) (CAST_VAL (T, TYPE_MINIMUM (T)))
 #define V_max(T) (CAST_VAL (T, TYPE_MAXIMUM (T)))
-#define IS_TIGHT(T) (signed_type_or_expr__(T) == TYPE_SIGNED (T))
+#define IS_TIGHT(T) (_GL_SIGNED_TYPE_OR_EXPR (T) == TYPE_SIGNED (T))
 #define ISDIGIT(c) ((unsigned int) (c) - '0' <= 9)
 
 /* Verify that an inttostr function works as advertised.

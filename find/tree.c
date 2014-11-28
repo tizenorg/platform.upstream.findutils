@@ -1,6 +1,6 @@
 /* tree.c -- helper functions to build and evaluate the expression tree.
    Copyright (C) 1990, 1991, 1992, 1993, 1994, 2000, 2003, 2004, 2005,
-                 2006, 2007, 2010 Free Software Foundation, Inc.
+   2006, 2007, 2010, 2011 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -16,16 +16,21 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/* config.h must always come first. */
 #include <config.h>
-#include "defs.h"
 
+/* system headers. */
 #include <assert.h>
 #include <stdlib.h>
-#include <fnmatch.h>
 
-#include "xalloc.h"
+/* gnulib headers. */
 #include "error.h"
+#include "fnmatch.h"
+#include "gettext.h"
+#include "xalloc.h"
 
+/* find headers. */
+#include "defs.h"
 
 #if ENABLE_NLS
 # include <libintl.h>
@@ -112,7 +117,7 @@ matches_start_point (const char *glob, bool foldcase)
    expression, which really is the expression that should be handed to
    our caller, so get_expr recurses. */
 
-struct predicate *
+static struct predicate *
 get_expr (struct predicate **input,
 	  short int prev_prec,
 	  const struct predicate* prev_pred)
@@ -584,18 +589,18 @@ consider_arm_swap (struct predicate *p)
 	    {
 	      want_swap = succ_rate_r < succ_rate_l;
 	      if (!want_swap)
-		reason = "Operation is OR and right success rate >= left";
+		reason = "Operation is OR; right success rate >= left";
 	    }
 	  else if (pred_is (p, pred_and))
 	    {
 	      want_swap = succ_rate_r > succ_rate_l;
 	      if (!want_swap)
-		reason = "Operation is AND and right success rate <= left";
+		reason = "Operation is AND; right success rate <= left";
 	    }
 	  else
 	    {
 	      want_swap = false;
-	      reason = "Not AND or OR";
+	      reason = "Not 'AND' or 'OR'";
 	    }
 	}
       else
@@ -672,10 +677,10 @@ do_arm_swaps (struct predicate *p)
      tests likely to succeed at the front of the list.  For AND, we
      prefer tests likely to fail at the front of the list.
 
-     This routine "normalizes" the predicate tree by ensuring that
-     all expression predicates have AND (or OR or COMMA) parent nodes
-     which are linked along the left edge of the expression tree.
-     This makes manipulation of subtrees easier.
+     This routine "normalizes" the predicate tree by ensuring that all
+     expression predicates have 'AND' (or 'OR' or 'COMMA') parent
+     nodes which are linked along the left edge of the expression
+     tree.  This makes manipulation of subtrees easier.
 
      EVAL_TREEP points to the root pointer of the predicate tree
      to be rearranged.  opt_expr may return a new root pointer there.
@@ -815,8 +820,9 @@ opt_expr (struct predicate **eval_treep)
 	  break;
 
 	case BI_OP:
-	  /* For nested AND or OR, recurse (AND/OR form layers on the left of
-	     the tree), and continue scanning this level of AND or OR. */
+	  /* For nested 'AND' or 'OR', recurse (AND/OR form layers on
+	     the left of the tree), and continue scanning this level
+	     of 'AND' or 'OR'. */
 	  curr->pred_right->side_effects = opt_expr (&curr->pred_right);
 	  break;
 
@@ -1220,8 +1226,8 @@ calculate_derived_rates (struct predicate *p)
 }
 
 /* opt_expr() rearranges predicates such that each left subtree is
- * rooted at a logical predicate (e.g. and or or).  check_normalization()
- * asserts that this property still holds.
+ * rooted at a logical predicate (e.g. '-a' or '-o').
+ * check_normalization() asserts that this property still holds.
  *
  */
 static void
@@ -1446,7 +1452,7 @@ build_expression_tree (int argc, char *argv[], int end_of_leading_options)
   return eval_tree;
 }
 
-/* Initialise the performance data for a predicate.
+/* Initialize the performance data for a predicate.
  */
 static void
 init_pred_perf (struct predicate *pred)
@@ -1577,7 +1583,7 @@ get_new_pred_chk_op (const struct parser_table *entry,
 struct cost_assoc
 {
   enum EvaluationCost cost;
-  char *name;
+  const char *name;
 };
 struct cost_assoc cost_table[] =
   {
@@ -1597,7 +1603,7 @@ struct cost_assoc cost_table[] =
 struct prec_assoc
 {
   short prec;
-  char *prec_name;
+  const char *prec_name;
 };
 
 static struct prec_assoc prec_table[] =
@@ -1614,7 +1620,7 @@ static struct prec_assoc prec_table[] =
 struct op_assoc
 {
   short type;
-  char *type_name;
+  const char *type_name;
 };
 
 static struct op_assoc type_table[] =
@@ -1641,28 +1647,26 @@ cost_name (enum EvaluationCost cost)
 }
 
 
-static char *
-type_name (type)
-     short type;
+static const char *
+type_name (short type)
 {
   int i;
 
   for (i = 0; type_table[i].type != (short) -1; i++)
     if (type_table[i].type == type)
       break;
-  return (type_table[i].type_name);
+  return type_table[i].type_name;
 }
 
-static char *
-prec_name (prec)
-     short prec;
+static const char *
+prec_name (short prec)
 {
   int i;
 
   for (i = 0; prec_table[i].prec != (short) -1; i++)
     if (prec_table[i].prec == prec)
       break;
-  return (prec_table[i].prec_name);
+  return prec_table[i].prec_name;
 }
 
 

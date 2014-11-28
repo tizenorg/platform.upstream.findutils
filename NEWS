@@ -1,5 +1,175 @@
 GNU findutils NEWS - User visible changes.      -*- outline -*- (allout)
 
+* Major changes in release 4.5.14, 2014-07-19
+
+** Bug Fixes
+
+#42793: "Failed to write output" with -ls (this bug affected only
+        release 4.5.13).
+
+* Major changes in release 4.5.13, 2014-07-16
+
+** Documentation Changes
+
+Some minor documentation improvements are listed in "Bug Fixes" below.
+
+** Bug Fixes
+
+#40339: Fix leaked directory handle when listing mounted file
+        systems.
+
+#40094: The xargs --help output has a small number of cosmetic
+        improvements.
+
+#39197: Small fix to find's manual page to remove an unwanted
+        backslash, which made the troff incompatible with Eric
+        Raymond's doclifter software.
+
+#39162: -printf reads beyond arguments terminated by \
+
+#35753: Check the success/failure of material I/O operations where
+        these are important to the use of the output (i.e. check the
+        output for "find -ok" but not debugging output).
+
+#31005: The find manual page and Texinfo manual now more clearly state
+        that -exec ... + always returns true.
+
+
+** Translations
+
+Updated translations: Estonian, Polish, Ukranian.
+
+
+* Major changes in release 4.5.12, 2013-09-22
+
+** Functional Changes to find
+
+The GNU extension "find ... -perm /MODE" is no longer disabled when
+the POSIXLY_CORRECT environment variable is set.
+
+The obsolete GNU extension "find ... -perm +MODE", which was withdrawn
+in release 4.2.21 in 2005 due to compatibility problems, has been
+completely removed.  Use "find ... -perm /MODE" instead.
+
+** Documentation Changes
+
+If you use -type or -xtype with a type letter corresponding to a file
+type which is not supported by the system on which find was compiled,
+find will now give a clearer error message (though the functionality
+is unchanged).  Type letters are affected are D, l and p (for Solaris
+Doors, symbolic links and named pipes respectively).
+
+The output of xargs --help has been slightly changed for greater
+clarity.
+
+The documentation for xargs now warns about parallel processes (xargs
+-P) sharing stdout.
+
+The documentation for find -execdir now describes correctly that the
+command will be executed in the same directory as the file we were
+considering at the time.  The documentation previously (and
+incorrectly) stated that the original working directory of find would
+be used.
+
+** Bug Fixes
+
+Some bugs in 4.5.11 were fixed without adding them to the bug
+database, though they are in the ChangeLog:
+
+*** Use of [[ ... ]] in find/testsuite/sv-bug-32043.sh
+
+*** Don't delete header files in "lib/" for "make clean".
+
+*** xargs: wait for process before prompting in interactive mode (-p)
+
+These following fixed bugs are recorded at
+https://savannah.gnu.org/bugs/?group=findutils:
+
+#40088: potential buffer overflow in -execdir and -okdir
+
+#39324: exits without error on OOM
+
+#38583: errno-buffer read failed in xargs_do_exec
+
+#38474: Unintended (?) behaviour change of -perm +mode predicate
+
+#36652: Better document that -0/-d turns off the effect of -E.
+
+#34976: find -execdir leaks file descriptors for the working directory
+
+
+* Major changes in release 4.5.11, 2013-02-02
+
+** Documentation Changes
+
+The Texinfo manual and the find manual pafe now explain why two find
+binaries (either 'find' and 'oldfind', or 'find' and 'ftsfind') are
+installed.  A manual page for either ftsfind or oldfind is also
+installed, whichever is appropriate.
+
+** Bug Fixes
+
+#34079: Apply gnulib ftw memory fix
+
+#33384: If rm/chmod etc. are not in /bin or /usr/bin, updatedb fails
+
+#18227: find -ls does not display device major/minor numbers.
+
+#29698: Correct and clarify documentation of xargs -d option
+
+#32887: Present xargs options alphabetically like in GNU cp(1) etc
+
+#14386: updatedb relies on mktemp, which is not portable.
+
+#32043: find -name [ doesn't obey posix
+
+#37926: The -inum predicate previously gave wrong results in oldfind
+        (ftsfind, the default find binary, was unaffected).
+
+** Functional Changes to xargs
+
+If no utility is specified, xargs now calls "echo" (and searches on
+$PATH to find it) rather than "/bin/echo".  This may give rise to
+subtle behaviour differences for some users.   To avoid unexpected
+surprises, just explicitly specify the utility you would like to run.
+For example use "xargs /bin/echo < foo" rather than "xargs < foo".
+
+A new option is provided, --process-slot-var.  If you set this, xargs
+will set the indicated environment variable in each child.  The values
+are re-used, but no executing child process will have the same value
+as another executing child process.  This wishlist item was Savannah
+bug #29512.
+
+** Functional Changes to find
+
+For find -printf, the format specifiers %{, %[ and %( are all now
+reserved for future use.  Previously these would print {, [ and (
+respectively, but in any case those characters can just be printed
+literally like this: find -printf "{[(".  Code changes intended to
+explain that these are reserved went into findutils-4.5.5, but this
+code had, before now, had no effect.
+
+When expanding "-printf '%F'", find reads /etc/mtab.  We now take the
+last match found in this file, rather than the first, to better deal
+with implementations which have duplicate entries (for example
+/proc/mounts on systems running the Linux kernel).
+
+Both oldfind and ftsfind now use less heap memory when processing
+directories containing very many files.  However, oldfind now uses one
+file descriptor per recursive subdirectory level, which will further
+limit the depth of directory trees it can search.  If you need find to
+be able to search deep directory trees, use ftsfind (this is, by
+default the binary built and installed as 'find').
+
+The behaviour of the "awk", "posix-awk" and "gnu-awk" regular
+expression types selected by the -regextype option have slightly
+changed, to bring them into line with the behaviour of the GNU C
+library.  For "awk", character classes (such as [[:digit:]]) are now
+supported.  For "gnu-awk" and "posix-awk", intervals are supported and
+invalid interval specifcations are treated as literals (for example
+'a{1' is treated as 'a\{1').
+
+
 * Major changes in release 4.5.10, 2011-05-11
 
 ** Documentation Changes
@@ -729,7 +899,7 @@ with a space
 
 ** Translations
 
-Findutils 4.3.4 includes a translation for the Ukranian language.
+Findutils 4.3.4 includes a translation for the Ukrainian language.
 
 
 * Major changes in release 4.3.3, 2007-04-15

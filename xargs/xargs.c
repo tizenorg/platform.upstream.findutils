@@ -1,6 +1,6 @@
 /* xargs -- build and execute command lines from standard input
-   Copyright (C) 1990, 91, 92, 93, 94, 2000, 2003, 2004, 2005, 2006,
-   2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1992, 1993, 1994, 2000, 2003, 2004, 2005,
+   2006, 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -23,51 +23,41 @@
 	Dmitry V. Levin
 */
 
+/* config.h must be included first. */
 #include <config.h>
 
-#include <ctype.h>
-#include <stdio.h>
-#include <errno.h>
-#include <limits.h>
-#include <stdint.h>
-#include <inttypes.h>
-
-#include <sys/types.h>
-#include <getopt.h>
-#include <fcntl.h>
+/* system headers. */
 #include <assert.h>
-#include <string.h>
-#include <sys/param.h>
-
-#ifndef LONG_MAX
-#define LONG_MAX (~(1 << (sizeof (long) * 8 - 1)))
-#endif
-
-#define ISBLANK(c) (isascii (c) && isblank (c))
-#define ISSPACE(c) (ISBLANK (c) || (c) == '\n' || (c) == '\r' \
-		    || (c) == '\f' || (c) == '\v')
-
-/* The presence of unistd.h is assumed by gnulib these days, so we
- * might as well assume it too.
- */
-#include <unistd.h>
-#include <signal.h>
-#include <sys/wait.h>
-#include <stdlib.h>
+#include <ctype.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <getopt.h>
+#include <inttypes.h>
+#include <limits.h>
 #include <locale.h>
-#include <wchar.h>
+#include <signal.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <wchar.h>
 
-#if !defined(SIGCHLD) && defined(SIGCLD)
-#define SIGCHLD SIGCLD
-#endif
-
-#include "verify.h"
-
+/* gnulib headers. */
+#include "closein.h"
+#include "error.h"
+#include "gettext.h"
 #include "progname.h"
 #include "quotearg.h"
-#include "findutils-version.h"
+#include "safe-read.h"
+#include "verify.h"
+#include "xalloc.h"
 
+/* find headers. */
+#include "buildcmd.h"
+#include "findutils-version.h"
 
 #if ENABLE_NLS
 # include <libintl.h>
@@ -84,24 +74,16 @@
 # define N_(String) String
 #endif
 
-#include "buildcmd.h"
-#include "arg-max.h"		/* must include after unistd.h. */
+#ifndef LONG_MAX
+#define LONG_MAX (~(1 << (sizeof (long) * 8 - 1)))
+#endif
 
+#define ISBLANK(c) (isascii (c) && isblank (c))
+#define ISSPACE(c) (ISBLANK (c) || (c) == '\n' || (c) == '\r' \
+		    || (c) == '\f' || (c) == '\v')
 
 /* Return nonzero if S is the EOF string.  */
 #define EOF_STR(s) (eof_str && *eof_str == *s && !strcmp (eof_str, s))
-
-#if __STDC__
-#define VOID void
-#else
-#define VOID char
-#endif
-
-#include <xalloc.h>
-#include "closein.h"
-#include "gnulib-version.h"
-
-void error (int status, int errnum, char *message,...);
 
 extern char *version_string;
 
@@ -113,7 +95,7 @@ static char *linebuf;
 static int keep_stdin = 0;
 
 /* Line number in stdin since the last command was executed.  */
-static int lineno = 0;
+static size_t lineno = 0;
 
 static struct buildcmd_state bc_state;
 static struct buildcmd_control bc_ctl;
@@ -177,6 +159,18 @@ static bool query_before_executing = false;
 static char input_delimiter = '\0';
 
 
+/* Name of the environment variable which indicates which 'slot'
+ * the child process is in.   This can be used to do some kind of basic
+ * load distribution.   We guarantee not to allow two processes to run
+ * at the same time with the same value of this variable.
+ */
+static char* slot_var_name = NULL;
+
+enum LongOptionIdentifier
+  {
+    PROCESS_SLOT_VAR = CHAR_MAX+1
+  };
+
 static struct option const longopts[] =
 {
   {"null", no_argument, NULL, '0'},
@@ -193,6 +187,7 @@ static struct option const longopts[] =
   {"show-limits", no_argument, NULL, 'S'},
   {"exit", no_argument, NULL, 'x'},
   {"max-procs", required_argument, NULL, 'P'},
+  {"process-slot-var", required_argument, NULL, PROCESS_SLOT_VAR},
   {"version", no_argument, NULL, 'v'},
   {"help", no_argument, NULL, 'h'},
   {NULL, no_argument, NULL, 0}
@@ -219,14 +214,13 @@ static bool print_args (bool ask);
 /* static void do_exec (void); */
 static int xargs_do_exec (struct buildcmd_control *ctl, void *usercontext, int argc, char **argv);
 static void exec_if_possible (void);
-static void add_proc (pid_t pid);
+static unsigned int add_proc (pid_t pid);
 static void wait_for_proc (bool all, unsigned int minreap);
 static void wait_for_proc_all (void);
 static void increment_proc_max (int);
 static void decrement_proc_max (int);
 static long parse_num (char *str, int option, long min, long max, int fatal);
 static void usage (FILE * stream);
-
 
 
 static char
@@ -259,7 +253,7 @@ get_char_oct_or_hex_escape (const char *s)
 	     s);
     }
   errno = 0;
-  endp = (char*)p;
+  endp = NULL;
   val = strtoul (p, &endp, base);
 
   /* This if condition is carefully constructed to do
@@ -367,11 +361,12 @@ smaller_of (size_t a, size_t b)
 int
 main (int argc, char **argv)
 {
-  int optc;
+  int optc, option_index;
   int show_limits = 0;			/* --show-limits */
   int always_run_command = 1;
-  char *input_file = "-"; /* "-" is stdin */
-  char *default_cmd = "/bin/echo";
+  const char *input_file = "-"; /* "-" is stdin */
+  char default_cmd[] = "echo";
+  char *default_arglist[1];
   int (*read_args) (void) = read_line;
   void (*act_on_init_result)(void) = noop;
   enum BC_INIT_STATUS bcstatus;
@@ -391,8 +386,11 @@ main (int argc, char **argv)
 #endif
   bindtextdomain (PACKAGE, LOCALEDIR);
   textdomain (PACKAGE);
-  atexit (close_stdin);
-  atexit (wait_for_proc_all);
+
+  if (atexit (close_stdin) || atexit (wait_for_proc_all))
+    {
+      error (EXIT_FAILURE, errno, _("The atexit library function failed"));
+    }
 
   /* xargs is required by POSIX to allow 2048 bytes of headroom
    * for extra environment variables (that perhaps the utliity might
@@ -480,7 +478,7 @@ main (int argc, char **argv)
     }
 
   while ((optc = getopt_long (argc, argv, "+0a:E:e::i::I:l::L:n:prs:txP:d:",
-			      longopts, (int *) 0)) != -1)
+			      longopts, &option_index)) != -1)
     {
       switch (optc)
 	{
@@ -560,7 +558,7 @@ main (int argc, char **argv)
 		error (0, 0,
 		       _("warning: value %ld for -s option is too large, "
 			 "using %ld instead"),
-		       arg_size, bc_ctl.posix_arg_size_max);
+		       (long) arg_size, (long) bc_ctl.posix_arg_size_max);
 		arg_size = bc_ctl.posix_arg_size_max;
 	      }
 	    bc_ctl.arg_max = arg_size;
@@ -601,10 +599,37 @@ main (int argc, char **argv)
 	  display_findutils_version ("xargs");
 	  return 0;
 
+	case PROCESS_SLOT_VAR:
+	  if (strchr (optarg, '='))
+	    {
+	      error (EXIT_FAILURE, 0,
+		     _("option --%s may not be set to a value which includes `='"),
+		     longopts[option_index].name);
+	    }
+	  slot_var_name = optarg;
+	  if (0 != unsetenv (slot_var_name))
+	    {
+	      /* This is a fatal error, otherwise some child process
+		 may not be able to guarantee that no two children
+		 have the same value for this variable; see
+		 set_slot_var.
+	      */
+	      error (EXIT_FAILURE, errno,
+		     _("failed to unset environment variable %s"),
+		     slot_var_name);
+	    }
+	  break;
+
 	default:
 	  usage (stderr);
 	  return 1;
 	}
+    }
+
+  if (eof_str && (read_args == read_string))
+    {
+      error (0, 0,
+	     _("warning: the -E option has no effect if -0 or -d is used.\n"));
     }
 
   /* If we had deferred failing due to problems in bc_init_controlinfo (),
@@ -660,7 +685,8 @@ main (int argc, char **argv)
     {
       optind = 0;
       argc = 1;
-      argv = &default_cmd;
+      default_arglist[0] = default_cmd;
+      argv = default_arglist;
     }
 
   if (show_limits)
@@ -735,15 +761,15 @@ main (int argc, char **argv)
     }
   else
     {
-      int i;
-      size_t len;
+      int i, args;
       size_t *arglen = xmalloc (sizeof (size_t) * argc);
 
       for (i = optind; i < argc; i++)
 	arglen[i] = strlen (argv[i]);
       bc_ctl.rplen = strlen (bc_ctl.replace_pat);
-      while ((len = (*read_args) ()) != -1)
+      while ((args = (*read_args) ()) != -1)
 	{
+	  size_t len = (size_t) args;
 	  /* Don't do insert on the command name.  */
 	  bc_clear_args (&bc_ctl, &bc_state);
 	  bc_state.cmd_argv_chars = 0; /* begin at start of buffer */
@@ -952,11 +978,19 @@ read_line (void)
     }
 }
 
-/* Read a null-terminated string from the input and add it to the list of
-   arguments to pass to the command.
-   Return -1 if eof (either physical or logical) is reached,
-   otherwise the length of the string read (including the null).  */
+/* Read a string (terminated by the delimiter, which may be NUL) from
+   the input and add it to the list of arguments to pass to the
+   command.
 
+   The return value is the length of the added argument, including its
+   terminating NUL.  The added argument is always terminated by NUL,
+   even if that is not the delimiter.
+
+   If we reach physical EOF before seeing the delimiter, we treat any
+   characters read as the final argument.
+
+   If no argument was read (that is, we reached physical EOF before
+   reading any characters) then -1 is returned. */
 static int
 read_string (void)
 {
@@ -1014,10 +1048,14 @@ read_string (void)
 static bool
 print_args (bool ask)
 {
-  int i;
+  size_t i;
 
   for (i = 0; i < bc_state.cmd_argc - 1; i++)
-    fprintf (stderr, "%s ", bc_state.cmd_argv[i]);
+    {
+      if (fprintf (stderr, "%s ", bc_state.cmd_argv[i]) < 0)
+	error (EXIT_FAILURE, errno, _("Failed to write to stderr"));
+    }
+
   if (ask)
     {
       static FILE *tty_stream;
@@ -1031,10 +1069,14 @@ print_args (bool ask)
 		   _("failed to open /dev/tty for reading"));
 	}
       fputs ("?...", stderr);
-      fflush (stderr);
+      if (fflush (stderr) != 0)
+	error (EXIT_FAILURE, errno, _("Failed to write to stderr"));
+
       c = savec = getc (tty_stream);
       while (c != EOF && c != '\n')
 	c = getc (tty_stream);
+      if (EOF == c)
+	error (EXIT_FAILURE, errno, _("Failed to read from stdin"));
       if (savec == 'y' || savec == 'Y')
 	return true;
     }
@@ -1044,6 +1086,55 @@ print_args (bool ask)
   return false;
 }
 
+/* Set SOME_ENVIRONMENT_VARIABLE=n in the environment. */
+static void
+set_slot_var (unsigned int n)
+{
+  static const char *fmt = "%u";
+  int size;
+  char *buf;
+
+
+  /* Determine the length of the buffer we need.
+
+     If the result would be zero-length or have length (not value) >
+     INT_MAX, the assumptions we made about how snprintf behaves (or
+     what UINT_MAX is) are wrong.  Hence we have a design error (not
+     an environmental error).
+  */
+  size = snprintf (NULL, 0u, fmt, n);
+  assert (size > 0);
+
+
+  /* Failures here are undesirable but not fatal, since we can still
+     guarantee that this child does not have a duplicate value of the
+     indicated environment variable set (since the parent unset it on
+     startup).
+  */
+  if (NULL == (buf = malloc (size+1)))
+    {
+      error (0, errno, _("unable to allocate memory"));
+    }
+  else
+    {
+      snprintf (buf, size+1, fmt, n);
+
+      /* If the user doesn't want us to set the variable, there is
+	 nothing to do.  However, we defer the bail-out until this
+	 point in order to get better test coverage.
+      */
+      if (slot_var_name)
+	{
+	  if (setenv (slot_var_name, buf, 1) < 0)
+	    {
+	      error (0, errno,
+		     _("failed to set environment variable %s"), slot_var_name);
+	    }
+	}
+      free (buf);
+    }
+}
+
 
 /* Close stdin and attach /dev/null to it.
  * This resolves Savannah bug #3992.
@@ -1051,6 +1142,14 @@ print_args (bool ask)
 static void
 prep_child_for_exec (void)
 {
+  /* The parent will call add_proc to allocate a slot.  We do the same in the
+     child to make sure we get the same value.
+
+     We use 0 here in order to avoid generating a data structure that appears
+     to indicate that we (the child) have a child. */
+  unsigned int slot = add_proc (0);
+  set_slot_var (slot);
+
   if (!keep_stdin)
     {
       const char inputfile[] = "/dev/null";
@@ -1064,7 +1163,8 @@ prep_child_for_exec (void)
 	   * stdin is almost as good as executing it
 	   * with its stdin attached to /dev/null.
 	   */
-	  error (0, errno, "%s", quotearg_n_style (0, locale_quoting_style, inputfile));
+	  error (0, errno, "%s",
+		 quotearg_n_style (0, locale_quoting_style, inputfile));
 	}
     }
 }
@@ -1084,19 +1184,22 @@ xargs_do_exec (struct buildcmd_control *ctl, void *usercontext, int argc, char *
   pid_t child;
   int fd[2];
   int buf;
-  int r;
+  size_t r;
 
   (void) ctl;
+  (void) argc;
+  (void) usercontext;
+
+  if (proc_max)
+    {
+      while (procs_executing >= proc_max)
+        {
+          wait_for_proc (false, 1u);
+        }
+    }
 
   if (!query_before_executing || print_args (true))
     {
-      if (proc_max)
-	{
-	  while (procs_executing >= proc_max)
-	    {
-	      wait_for_proc (false, 1u);
-	    }
-	}
       if (!query_before_executing && print_command)
 	print_args (false);
 
@@ -1175,13 +1278,15 @@ xargs_do_exec (struct buildcmd_control *ctl, void *usercontext, int argc, char *
 	} /* switch (child) */
       /*fprintf (stderr, "forked child (bc_state.cmd_argc=%d) -> ", bc_state.cmd_argc);*/
 
-      switch (r = read (fd[0], &buf, sizeof (int)))
+      /* We use safe_read here in order to avoid an error if
+	 SIGUSR[12] is handled during the read system call. */
+      switch (r = safe_read (fd[0], &buf, sizeof (int)))
 	{
-	case -1:
+	case SAFE_READ_ERROR:
 	  {
 	    close (fd[0]);
 	    error (0, errno,
-		   _("errno-buffer read failed in xargs_do_exec "
+		   _("errno-buffer safe_read failed in xargs_do_exec "
 		     "(this is probably a bug, please report it)"));
 	    break;
 	  }
@@ -1234,7 +1339,7 @@ xargs_do_exec (struct buildcmd_control *ctl, void *usercontext, int argc, char *
 	default:
 	  {
 	    error (EXIT_FAILURE, errno,
-		   _("read returned unexpected value %d; "
+		   _("read returned unexpected value %zu; "
 		     "this is probably a bug, please report it"), r);
 	  }
 	} /* switch on bytes read */
@@ -1257,7 +1362,7 @@ exec_if_possible (void)
 /* Add the process with id PID to the list of processes that have
    been executed.  */
 
-static void
+static unsigned int
 add_proc (pid_t pid)
 {
   unsigned int i, j;
@@ -1282,6 +1387,7 @@ add_proc (pid_t pid)
   pids[i] = pid;
   procs_executing++;
   procs_executed = true;
+  return i;
 }
 
 
@@ -1332,8 +1438,8 @@ wait_for_proc (bool all, unsigned int minreap)
 		{
 		  /* Receipt of SIGUSR1 gave us an extra slot and we
 		   * don't need to wait for all processes to finish.
-		   * We can stop reaping now, but in any case check for 
-		   * further dead children without waiting for another 
+		   * We can stop reaping now, but in any case check for
+		   * further dead children without waiting for another
 		   * to exit.
 		   */
 		  wflags = WNOHANG;
@@ -1359,7 +1465,7 @@ wait_for_proc (bool all, unsigned int minreap)
 	       * number of child processes still executing, so the
 	       * loop should have terminated.
 	       */
-	      error (0, 0, _("WARNING: Lost track of %d child processes"),
+	      error (0, 0, _("WARNING: Lost track of %lu child processes"),
 		     procs_executing);
 	    }
 	  else
@@ -1430,12 +1536,13 @@ wait_for_proc_all (void)
 
 /* Increment or decrement the number of processes we can start simultaneously,
    when we receive a signal from the outside world.
-   
+
    We must take special care around proc_max == 0 (unlimited children),
    proc_max == 1 (don't decrement to zero).  */
 static void
 increment_proc_max (int ignore)
 {
+        (void) ignore;
 	/* If user increments from 0 to 1, we'll take it and serialize. */
 	proc_max++;
 	/* If we're waiting for a process to die before doing something,
@@ -1446,6 +1553,7 @@ increment_proc_max (int ignore)
 static void
 decrement_proc_max (int ignore)
 {
+        (void) ignore;
 	if (proc_max > 1)
 		proc_max--;
 }
@@ -1505,16 +1613,50 @@ parse_num (char *str, int option, long int min, long int max, int fatal)
 static void
 usage (FILE *stream)
 {
-  fprintf (stream, _("\
-Usage: %s [-0prtx] [--interactive] [--null] [-d|--delimiter=delim]\n\
-       [-E eof-str] [-e[eof-str]]  [--eof[=eof-str]]\n\
-       [-L max-lines] [-l[max-lines]] [--max-lines[=max-lines]]\n\
-       [-I replace-str] [-i[replace-str]] [--replace[=replace-str]]\n\
-       [-n max-args] [--max-args=max-args]\n\
-       [-s max-chars] [--max-chars=max-chars]\n\
-       [-P max-procs]  [--max-procs=max-procs] [--show-limits]\n\
-       [--verbose] [--exit] [--no-run-if-empty] [--arg-file=file]\n\
-       [--version] [--help] [command [initial-arguments]]\n"),
-	   program_name);
-  fputs (_("\nReport bugs to <bug-findutils@gnu.org>.\n"), stream);
+  fprintf (stream,
+           _("Usage: %s [OPTION]... COMMAND [INITIAL-ARGS]...\n"),
+           program_name);
+
+#define HTL(t) fputs (t, stream);
+
+  HTL (_("Run COMMAND with arguments INITIAL-ARGS and more arguments read from input.\n"
+         "\n"));
+  HTL (_("Mandatory and optional arguments to long options are also\n"
+         "mandatory or optional for the corresponding short option.\n"));
+  HTL (_("  -0, --null                   items are separated by a null, not whitespace;\n"
+         "                                 disables quote and backslash processing and\n"
+	 "                                 logical EOF processing\n"));
+  HTL (_("  -a, --arg-file=FILE          read arguments from FILE, not standard input\n"));
+  HTL (_("  -d, --delimiter=CHARACTER    items in input stream are separated by CHARACTER,\n"
+         "                                 not by whitespace; disables quote and backslash\n"
+         "                                 processing and logical EOF processing\n"));
+  HTL (_("  -E END                       set logical EOF string; if END occurs as a line\n"
+	 "                                 of input, the rest of the input is ignored\n"
+	 "                                 (ignored if -0 or -d was specified)\n"));
+  HTL (_("  -e, --eof[=END]              equivalent to -E END if END is specified;\n"
+         "                                 otherwise, there is no end-of-file string\n"));
+  HTL (_("  -I R                         same as --replace=R\n"));
+  HTL (_("  -i, --replace[=R]            replace R in INITIAL-ARGS with names read\n"
+         "                                 from standard input; if R is unspecified,\n"
+         "                                 assume {}\n"));
+  HTL (_("  -L, --max-lines=MAX-LINES    use at most MAX-LINES non-blank input lines per\n"
+         "                                 command line\n"));
+  HTL (_("  -l[MAX-LINES]                similar to -L but defaults to at most one non-\n"
+         "                                 blank input line if MAX-LINES is not specified\n"));
+  HTL (_("  -n, --max-args=MAX-ARGS      use at most MAX-ARGS arguments per command line\n"));
+  HTL (_("  -P, --max-procs=MAX-PROCS    run at most MAX-PROCS processes at a time\n"));
+  HTL (_("  -p, --interactive            prompt before running commands\n"));
+  HTL (_("      --process-slot-var=VAR   set environment variable VAR in child processes\n"));
+  HTL (_("  -r, --no-run-if-empty        if there are no arguments, then do not run COMMAND;\n"
+         "                                 if this option is not given, COMMAND will be\n"
+         "                                 run at least once\n"));
+  HTL (_("  -s, --max-chars=MAX-CHARS    limit length of command line to MAX-CHARS\n"));
+  HTL (_("      --show-limits            show limits on command-line length\n"));
+  HTL (_("  -t, --verbose                print commands before executing them\n"));
+  HTL (_("  -x, --exit                   exit if the size (see -s) is exceeded\n"));
+
+  HTL (_("      --help                   display this help and exit\n"));
+  HTL (_("      --version                output version information and exit\n"));
+  HTL (_("\n"
+         "Report bugs to <bug-findutils@gnu.org>.\n"));
 }
