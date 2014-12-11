@@ -48,10 +48,7 @@ export DEFAULT_ARG_SIZE="(31u * 1024u)"
 %endif
 %configure \
   --libexecdir=%{_libdir}/find \
-  --localstatedir=/var/lib \
-  --without-included-regex \
-  --without-fts \
-  --enable-d_type-optimisation
+  --localstatedir=/var/lib
 %{__make} %{?_smp_mflags}
 
 %check
